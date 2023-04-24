@@ -18,8 +18,13 @@ interface Edge {
   weight: number;
 }
 
+interface Node {
+  did: string;
+  handle: string;
+}
+
 const DemoGraph: React.FC<{}> = () => {
-  const [nodes, setNodes] = React.useState<string[]>([]);
+  const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
 
   const SocialGraph: FC = () => {
@@ -39,9 +44,9 @@ const DemoGraph: React.FC<{}> = () => {
           console.log(`Adding node ${i} of ${totalNodes - 1}`);
         }
         const node = nodes[i];
-        newGraph.addNode(node, {
-          key: node,
-          label: node,
+        newGraph.addNode(node.did, {
+          key: node.did,
+          label: node.handle,
         });
       }
 
@@ -137,17 +142,23 @@ const DemoGraph: React.FC<{}> = () => {
     const responseText = await textGraph.text();
     const lines = responseText.split("\n").filter((line) => line.trim() !== "");
 
-    const newNodes: string[] = [];
+    const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
 
     lines.forEach((line, index) => {
-      const [source, target, weight] = line.split(" ");
-      if (!newNodes.includes(source)) {
-        newNodes.push(source);
+      const [source, sourceHandle, target, targetHandle, weight] =
+        line.split(" ");
+
+      const sourceNode = { did: source, handle: sourceHandle };
+      if (!newNodes.find((node) => node.did === source)) {
+        newNodes.push(sourceNode);
       }
-      if (!newNodes.includes(target)) {
-        newNodes.push(target);
+
+      const targetNode = { did: target, handle: targetHandle };
+      if (!newNodes.find((node) => node.did === target)) {
+        newNodes.push(targetNode);
       }
+
       newEdges.push({
         source,
         target,
