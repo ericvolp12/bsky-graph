@@ -30,6 +30,12 @@ const DemoGraph: React.FC<{}> = () => {
   const [edgeCount, setEdgeCount] = React.useState<number>(0);
   const [totalWeight, setTotalWeight] = React.useState<number>(0);
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
+  const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(0);
+  const [selectedNodeWeight, setSelectedNodeWeight] = React.useState<number>(0);
+  const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
+    string[] | null
+  >(null);
+
   const previousSelectedNode: string | null = usePrevious<string | null>(
     selectedNode
   );
@@ -98,9 +104,16 @@ const DemoGraph: React.FC<{}> = () => {
           graph?.setNodeAttribute(node, "color", oldColor);
         });
 
-        console.log(
-          `Selected node: ${selectedNode}, previous: ${previousSelectedNode}`
+        setSelectedNodeCount(graph?.neighbors(selectedNode).length || 0);
+        setSelectedNodeWeight(
+          graph
+            ?.edges(selectedNode)
+            .reduce(
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              0
+            ) || 0
         );
+        setSelectedNodeEdges(graph?.edges(selectedNode) || null);
       } else if (graph !== null && selectedNode === null) {
         graph?.edges().forEach((edge) => {
           graph?.setEdgeAttribute(edge, "hidden", false);
@@ -109,6 +122,9 @@ const DemoGraph: React.FC<{}> = () => {
           const oldColor = graph.getNodeAttribute(node, "old-color");
           graph?.setNodeAttribute(node, "color", oldColor);
         });
+        setSelectedNodeCount(0);
+        setSelectedNodeWeight(0);
+        setSelectedNodeEdges(null);
       }
     }, [selectedNode]);
 
@@ -161,7 +177,9 @@ const DemoGraph: React.FC<{}> = () => {
                 Users Represented
               </dt>
               <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-                {userCount.toLocaleString()}
+                {selectedNodeCount > 0
+                  ? selectedNodeCount.toLocaleString()
+                  : userCount.toLocaleString()}
               </dd>
             </div>
             <div className="flex flex-wrap items-baseline bg-white text-center">
@@ -169,7 +187,9 @@ const DemoGraph: React.FC<{}> = () => {
                 Connections Represented
               </dt>
               <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-                {edgeCount.toLocaleString()}
+                {selectedNodeEdges
+                  ? selectedNodeEdges.length.toLocaleString()
+                  : edgeCount.toLocaleString()}
               </dd>
             </div>
             <div className="flex flex-wrap items-baseline bg-white text-center">
@@ -177,7 +197,9 @@ const DemoGraph: React.FC<{}> = () => {
                 Interactions Represented
               </dt>
               <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-                {totalWeight.toLocaleString()}
+                {selectedNodeWeight > 0
+                  ? selectedNodeWeight.toLocaleString()
+                  : totalWeight.toLocaleString()}
               </dd>
             </div>
           </dl>
