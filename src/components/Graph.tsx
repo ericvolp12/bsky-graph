@@ -169,14 +169,15 @@ const DemoGraph: React.FC<{}> = () => {
       }}
     >
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-40 transform -translate-x-1/2">
+      <div className="fixed left-1/2 bottom-5 md:bottom-40 transform -translate-x-1/2">
         <div className="bg-white shadow sm:rounded-lg pb-1">
-          <dl className="mx-auto grid grid-cols-1 gap-px bg-gray-900/5 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-wrap items-baseline bg-white text-center">
               <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Users Represented
+                Users{" "}
+                <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
+              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
                 {selectedNodeCount > 0
                   ? selectedNodeCount.toLocaleString()
                   : userCount.toLocaleString()}
@@ -184,9 +185,10 @@ const DemoGraph: React.FC<{}> = () => {
             </div>
             <div className="flex flex-wrap items-baseline bg-white text-center">
               <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Connections Represented
+                Connections{" "}
+                <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
+              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
                 {selectedNodeEdges
                   ? selectedNodeEdges.length.toLocaleString()
                   : edgeCount.toLocaleString()}
@@ -194,9 +196,10 @@ const DemoGraph: React.FC<{}> = () => {
             </div>
             <div className="flex flex-wrap items-baseline bg-white text-center">
               <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Interactions Represented
+                Interactions{" "}
+                <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
+              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
                 {selectedNodeWeight > 0
                   ? selectedNodeWeight.toLocaleString()
                   : totalWeight.toLocaleString()}

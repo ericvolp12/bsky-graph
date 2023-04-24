@@ -161,14 +161,14 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
   };
 
   return (
-    <div {...htmlProps}>
+    <div {...htmlProps} className="w-auto">
       <label htmlFor={inputId} style={{ display: "none" }}>
         {labels["text"] || "Search a node"}
       </label>
       <input
         id={inputId}
         type="text"
-        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-3"
         placeholder={labels["placeholder"] || "Search for a Handle"}
         list={`${inputId}-datalist`}
         value={search}
