@@ -19,8 +19,7 @@ interface Edge {
 }
 
 const DemoGraph: React.FC<{}> = () => {
-  const [nodes, setNodes] = React.useState<string[]>([]);
-  const [edges, setEdges] = React.useState<Edge[]>([]);
+  const [graphDump, setGraphDump] = React.useState<any>(null);
 
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
@@ -31,80 +30,20 @@ const DemoGraph: React.FC<{}> = () => {
     useEffect(() => {
       // Create the graph
       const newGraph = new MultiDirectedGraph();
-      const totalEdges = edges.length;
-      const totalNodes = nodes.length;
-
-      for (let i = 0; i < totalNodes; i++) {
-        if (i % 100 === 0) {
-          console.log(`Adding node ${i} of ${totalNodes - 1}`);
-        }
-        const node = nodes[i];
-        newGraph.addNode(node, {
-          key: node,
-          label: node,
-        });
+      if (graphDump !== null) {
+        newGraph.import(graphDump);
+        setGraph(newGraph);
+        loadGraph(newGraph);
       }
-
-      for (let i = 0; i < totalEdges; i++) {
-        if (i % 100 === 0) {
-          console.log(`Adding edge ${i} of ${totalEdges - 1}`);
-        }
-        const edge = edges[i];
-        newGraph.addEdge(edge.source, edge.target, { weight: edge.weight });
-      }
-
-      const degrees = newGraph.nodes().map((node) => newGraph.degree(node));
-      const minDegree = Math.min(...degrees);
-      const maxDegree = Math.max(...degrees);
-      const skyBluePalette = [
-        "#009ACD", // DeepSkyBlue3
-        "#5B9BD5", // CornflowerBlue
-        "#7EC0EE", // SkyBlue2
-        "#87CEFA", // LightSkyBlue1
-        "#4A708B", // SkyBlue4
-        "#1E90FF", // DodgerBlue
-        "#00BFFF", // DeepSkyBlue
-        "#3CB371", // MediumSeaGreen
-        "#FF7F50", // Coral
-        "#FF4500", // OrangeRed
-      ];
-      const minSize = 2,
-        maxSize = 15;
-      console.log("Assigning attributes...");
-      newGraph.forEachNode((node) => {
-        const degree = newGraph.degree(node);
-        newGraph.setNodeAttribute(
-          node,
-          "size",
-          minSize +
-            ((degree - minDegree) / (maxDegree - minDegree)) *
-              (maxSize - minSize)
-        );
-        // Set a random color
-        newGraph.setNodeAttribute(
-          node,
-          "color",
-          skyBluePalette[Math.floor(Math.random() * 10)]
-        );
-      });
-      console.log("Assigning layout...");
-      circular.assign(newGraph);
-      const settings = forceAtlas2.inferSettings(newGraph);
-      console.log("Running Force Atlas...");
-      forceAtlas2.assign(newGraph, { settings, iterations: 600 });
-      console.log("Done running Force Atlas");
-      console.log(newGraph.export());
-      setGraph(newGraph);
-      loadGraph(newGraph);
     }, [loadGraph]);
 
     useEffect(() => {
       // Register the events
       registerEvents({
         enterNode: (event) => {
-          graph?.forEachEdge(event.node, (edge) => {
-            graph.setEdgeAttribute(edge, "color", "#FF0000");
-          });
+          // graph?.forEachEdge(event.node, (edge) => {
+          //   graph.setEdgeAttribute(edge, "color", "#FF0000");
+          // });
         },
         leaveNode: (event) => {},
       });
@@ -114,30 +53,9 @@ const DemoGraph: React.FC<{}> = () => {
   };
 
   async function fetchGraph() {
-    const textGraph = await fetch("/social_graph.txt");
-    const responseText = await textGraph.text();
-    const lines = responseText.split("\n").filter((line) => line.trim() !== "");
-
-    const newNodes: string[] = [];
-    const newEdges: Edge[] = [];
-
-    lines.forEach((line, index) => {
-      const [source, target, weight] = line.split(" ");
-      if (!newNodes.includes(source)) {
-        newNodes.push(source);
-      }
-      if (!newNodes.includes(target)) {
-        newNodes.push(target);
-      }
-      newEdges.push({
-        source,
-        target,
-        weight: parseInt(weight),
-      });
-    });
-
-    setNodes(newNodes);
-    setEdges(newEdges);
+    const textGraph = await fetch("/exported_graph_minified.json");
+    const responseJSON = await textGraph.json();
+    setGraphDump(responseJSON);
   }
 
   useEffect(() => {
@@ -161,7 +79,7 @@ const DemoGraph: React.FC<{}> = () => {
     >
       <SocialGraph />
       <div className="fixed left-1/2 bottom-40 transform -translate-x-1/2">
-        <CustomSearch style={{ width: "200px" }} />
+        <CustomSearch style={{ width: "300px" }} />
       </div>
     </SigmaContainer>
   );
