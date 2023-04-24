@@ -7686,8 +7686,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+function hideLoadingSpinner() {
+    var spinner = document.getElementById("loading-spinner");
+    if (spinner) {
+        spinner.style.display = "none";
+    }
+}
 // Load external GEXF file:
-fetch("/social-graph.txt")
+fetch("./social-graph.txt")
     .then(function (res) { return res.text(); })
     .then(function (graphData) {
     var lines = graphData.split("\n").filter(function (line) { return line.trim() !== ""; });
@@ -7748,33 +7754,49 @@ fetch("/social-graph.txt")
     graphology_layout_forceatlas2__WEBPACK_IMPORTED_MODULE_3___default().assign(graph, { settings: settings, iterations: 600 });
     // Retrieve some useful DOM elements:
     var container = document.getElementById("sigma-container");
-    var zoomInBtn = document.getElementById("zoom-in");
-    var zoomOutBtn = document.getElementById("zoom-out");
-    var zoomResetBtn = document.getElementById("zoom-reset");
-    var labelsThresholdRange = document.getElementById("labels-threshold");
+    var searchInput = document.getElementById("search-input");
+    var searchBtn = document.getElementById("search-button");
     // Instanciate sigma:
     var renderer = new (sigma__WEBPACK_IMPORTED_MODULE_0___default())(graph, container, {
-        minCameraRatio: 0.1,
+        minCameraRatio: 0.02,
         maxCameraRatio: 10,
     });
     var camera = renderer.getCamera();
-    // Bind zoom manipulation buttons
-    zoomInBtn.addEventListener("click", function () {
-        camera.animatedZoom({ duration: 600 });
-    });
-    zoomOutBtn.addEventListener("click", function () {
-        camera.animatedUnzoom({ duration: 600 });
-    });
-    zoomResetBtn.addEventListener("click", function () {
-        camera.animatedReset({ duration: 600 });
-    });
-    // Bind labels threshold to range input
-    labelsThresholdRange.addEventListener("input", function () {
-        renderer.setSetting("labelRenderedSizeThreshold", +labelsThresholdRange.value);
-    });
-    // Set proper range initial value:
-    labelsThresholdRange.value =
-        renderer.getSetting("labelRenderedSizeThreshold") + "";
+    var lastSearchedNode = "";
+    if (searchBtn !== null) {
+        searchBtn.addEventListener("click", function () {
+            var searchQuery = searchInput.value.trim();
+            if (searchQuery === "")
+                return;
+            var matchedNodes = graph.nodes().filter(function (node) {
+                return graph.getNodeAttribute(node, "label").includes(searchQuery);
+            });
+            if (matchedNodes.length > 0) {
+                var firstMatchedNode = matchedNodes[0];
+                var nodeDisplayData = renderer.getNodeDisplayData(firstMatchedNode);
+                if (nodeDisplayData !== null) {
+                    var newX = nodeDisplayData === null || nodeDisplayData === void 0 ? void 0 : nodeDisplayData.x;
+                    var newY = nodeDisplayData === null || nodeDisplayData === void 0 ? void 0 : nodeDisplayData.y;
+                    console.log(newX, newY);
+                    if (lastSearchedNode !== "") {
+                        graph.setNodeAttribute(lastSearchedNode, "highlighted", false);
+                    }
+                    lastSearchedNode = firstMatchedNode;
+                    graph.setNodeAttribute(firstMatchedNode, "highlighted", true);
+                    camera.animate({
+                        x: newX,
+                        y: newY,
+                        ratio: 0.02,
+                    });
+                }
+            }
+            else {
+                alert("No matching node found.");
+            }
+        });
+    }
+    // Call the hideLoadingSpinner function after the renderer has been initialized
+    hideLoadingSpinner();
 });
 
 
@@ -8454,7 +8476,7 @@ module.exports = function (hash, moduleMap, options) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("a23cea711a7de4bac4f9")
+/******/ 		__webpack_require__.h = () => ("75a8b93d3b8e0149d31b")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */

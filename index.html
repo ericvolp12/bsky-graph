@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!-- saved from url=(0022)http://localhost:3000/ -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BlueSky Reply-Based Social Graph by Jaz (jaz.bsky.social)</title>
-  </head>
-  <body>
     <style>
       html,
       body,
@@ -17,9 +17,125 @@
         padding: 0;
         overflow: hidden;
       }
-    </style>
-    <div id="sigma-container"><canvas class="sigma-edges" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-edgeLabels" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-nodes" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-labels" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-hovers" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-hoverNodes" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas><canvas class="sigma-mouse" style="position: absolute; width: 2560px; height: 940px;" width="2560px" height="940px"></canvas></div>
-    <script src="/js/bundle.js"></script>
-  
 
-</body></html>
+      .search-container {
+        position: absolute;
+        bottom: 10vh;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+      }
+
+      #search-input {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 5px 10px;
+        font-size: 20px;
+        outline: none;
+        width: 200px;
+      }
+
+      #search-input:focus {
+        border-color: #009acd;
+      }
+
+      #search-button {
+        background-color: #009acd;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 6px 12px;
+        font-size: 20px;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+
+      #search-button:hover {
+        background-color: #0079a9;
+      }
+      /* Add these styles inside the <style> tag */
+      .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #009acd;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        z-index: 20;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="loading-spinner"
+      class="loading-spinner"
+      style="display: none"
+    ></div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search for Users" />
+      <button id="search-button">Search</button>
+    </div>
+    <div id="sigma-container">
+      <canvas
+        class="sigma-edges"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-edgeLabels"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-nodes"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-labels"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-hovers"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-hoverNodes"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas
+      ><canvas
+        class="sigma-mouse"
+        style="position: absolute; width: 2560px; height: 1334px"
+        width="2560px"
+        height="1334px"
+      ></canvas>
+    </div>
+    <script src="/js/bundle.js"></script>
+  </body>
+</html>
