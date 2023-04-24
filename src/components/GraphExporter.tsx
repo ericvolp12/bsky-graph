@@ -56,7 +56,11 @@ const DemoGraph: React.FC<{}> = () => {
           did: node.did,
           label: node.handle,
         };
-        newGraph.addNode(i, tempNode);
+        const slimNode = {
+          key: i,
+          label: node.handle,
+        };
+        newGraph.addNode(i, slimNode);
         tempNodes.push(tempNode);
       }
 
@@ -86,7 +90,7 @@ const DemoGraph: React.FC<{}> = () => {
           tempNodes.find((node) => node.did === edge.target)?.key,
           {
             weight: edge.weight,
-            size: size,
+            size: parseFloat(size.toFixed(2)),
           }
         );
       }
@@ -111,13 +115,17 @@ const DemoGraph: React.FC<{}> = () => {
       console.log("Assigning attributes...");
       newGraph.forEachNode((node) => {
         const degree = newGraph.degree(node);
-        newGraph.setNodeAttribute(
-          node,
-          "size",
+        // Set the size based on the degree of the node relative to the min and max degrees
+        let newNodeSize =
           minSize +
-            ((degree - minDegree) / (maxDegree - minDegree)) *
-              (maxSize - minSize)
-        );
+          ((degree - minDegree) / (maxDegree - minDegree)) *
+            (maxSize - minSize);
+
+        // Round to 2 decimal places to conserve bits in the exported graph
+        if (newNodeSize > 1) {
+          newNodeSize = parseFloat(newNodeSize.toFixed(2));
+        }
+        newGraph.setNodeAttribute(node, "size", newNodeSize);
         // Set a random color
         newGraph.setNodeAttribute(
           node,
@@ -131,6 +139,14 @@ const DemoGraph: React.FC<{}> = () => {
       console.log("Running Force Atlas...");
       forceAtlas2.assign(newGraph, { settings, iterations: 600 });
       console.log("Done running Force Atlas");
+      // Reduce precision on node x and y coordinates to conserve bits in the exported graph
+      newGraph.forEachNode((node) => {
+        const x = newGraph.getNodeAttribute(node, "x");
+        const y = newGraph.getNodeAttribute(node, "y");
+        newGraph.setNodeAttribute(node, "x", parseFloat(x.toFixed(3)));
+        newGraph.setNodeAttribute(node, "y", parseFloat(y.toFixed(3)));
+      });
+
       console.log(newGraph.export());
       setGraph(newGraph);
       loadGraph(newGraph);
