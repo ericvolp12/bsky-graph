@@ -136,18 +136,6 @@ const DemoGraph: React.FC<{}> = () => {
       loadGraph(newGraph);
     }, [loadGraph]);
 
-    useEffect(() => {
-      // Register the events
-      registerEvents({
-        enterNode: (event) => {
-          graph?.forEachEdge(event.node, (edge) => {
-            graph.setEdgeAttribute(edge, "color", "#FF0000");
-          });
-        },
-        leaveNode: (event) => {},
-      });
-    }, [registerEvents, graph]);
-
     return null;
   };
 
