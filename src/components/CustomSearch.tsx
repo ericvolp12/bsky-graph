@@ -162,29 +162,25 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
 
   return (
     <div {...htmlProps}>
-      <div className="bg-white shadow sm:rounded-lg">
-        <div className="px-2 py-2 sm:p-2">
-          <label htmlFor={inputId} style={{ display: "none" }}>
-            {labels["text"] || "Search a node"}
-          </label>
-          <input
-            id={inputId}
-            type="text"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            placeholder={labels["placeholder"] || "Search for a Handle"}
-            list={`${inputId}-datalist`}
-            value={search}
-            onChange={onInputChange}
-          />
-          <datalist id={`${inputId}-datalist`}>
-            {values.map((value: { id: string; label: string }) => (
-              <option key={value.id} value={value.label}>
-                {value.label}
-              </option>
-            ))}
-          </datalist>
-        </div>
-      </div>
+      <label htmlFor={inputId} style={{ display: "none" }}>
+        {labels["text"] || "Search a node"}
+      </label>
+      <input
+        id={inputId}
+        type="text"
+        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+        placeholder={labels["placeholder"] || "Search for a Handle"}
+        list={`${inputId}-datalist`}
+        value={search}
+        onChange={onInputChange}
+      />
+      <datalist id={`${inputId}-datalist`}>
+        {values.map((value: { id: string; label: string }) => (
+          <option key={value.id} value={value.label}>
+            {value.label}
+          </option>
+        ))}
+      </datalist>
     </div>
   );
 };
