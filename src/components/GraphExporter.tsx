@@ -23,6 +23,12 @@ interface Node {
   handle: string;
 }
 
+interface TempNode {
+  key: number;
+  did: string;
+  label: string;
+}
+
 const DemoGraph: React.FC<{}> = () => {
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
@@ -38,16 +44,20 @@ const DemoGraph: React.FC<{}> = () => {
       const newGraph = new MultiDirectedGraph();
       const totalEdges = edges.length;
       const totalNodes = nodes.length;
+      const tempNodes: TempNode[] = [];
 
       for (let i = 0; i < totalNodes; i++) {
         if (i % 100 === 0) {
           console.log(`Adding node ${i} of ${totalNodes - 1}`);
         }
         const node = nodes[i];
-        newGraph.addNode(node.did, {
-          key: node.did,
+        const tempNode = {
+          key: i,
+          did: node.did,
           label: node.handle,
-        });
+        };
+        newGraph.addNode(i, tempNode);
+        tempNodes.push(tempNode);
       }
 
       // First, find the minimum and maximum weights in the graph
@@ -71,10 +81,14 @@ const DemoGraph: React.FC<{}> = () => {
         const size =
           1 + ((edge.weight - minWeight) / (maxWeight - minWeight)) * (10 - 1);
 
-        newGraph.addEdge(edge.source, edge.target, {
-          weight: edge.weight,
-          size: size,
-        });
+        newGraph.addEdge(
+          tempNodes.find((node) => node.did === edge.source)?.key,
+          tempNodes.find((node) => node.did === edge.target)?.key,
+          {
+            weight: edge.weight,
+            size: size,
+          }
+        );
       }
 
       const degrees = newGraph.nodes().map((node) => newGraph.degree(node));
