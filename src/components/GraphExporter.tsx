@@ -45,12 +45,31 @@ const DemoGraph: React.FC<{}> = () => {
         });
       }
 
+      // First, find the minimum and maximum weights in the graph
+      let minWeight = Infinity;
+      let maxWeight = -Infinity;
+
+      for (let i = 0; i < totalEdges; i++) {
+        const edge = edges[i];
+        minWeight = Math.min(minWeight, edge.weight);
+        maxWeight = Math.max(maxWeight, edge.weight);
+      }
+
+      // Then, set the size of each edge based on its weight relative to the min and max weights
       for (let i = 0; i < totalEdges; i++) {
         if (i % 100 === 0) {
           console.log(`Adding edge ${i} of ${totalEdges - 1}`);
         }
         const edge = edges[i];
-        newGraph.addEdge(edge.source, edge.target, { weight: edge.weight });
+
+        // Calculate the size based on the edge weight relative to the range of weights
+        const size =
+          1 + ((edge.weight - minWeight) / (maxWeight - minWeight)) * (10 - 1);
+
+        newGraph.addEdge(edge.source, edge.target, {
+          weight: edge.weight,
+          size: size,
+        });
       }
 
       const degrees = newGraph.nodes().map((node) => newGraph.degree(node));

@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useRef } from "react";
 
 import { MultiDirectedGraph } from "graphology";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
@@ -11,22 +11,41 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
 
+// Hook
+function usePrevious<T>(value: T): T {
+  // The ref object is a generic container whose current property is mutable ...
+  // ... and can hold any value, similar to an instance property on a class
+  const ref: any = useRef<T>();
+  // Store current value in ref
+  useEffect(() => {
+    ref.current = value;
+  }, [value]); // Only re-run if value changes
+  // Return previous value (happens before update in useEffect above)
+  return ref.current;
+}
+
 const DemoGraph: React.FC<{}> = () => {
   const [graphDump, setGraphDump] = React.useState<any>(null);
   const [userCount, setUserCount] = React.useState<number>(0);
   const [edgeCount, setEdgeCount] = React.useState<number>(0);
   const [totalWeight, setTotalWeight] = React.useState<number>(0);
-  const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
+  const previousSelectedNode: string | null = usePrevious<string | null>(
+    selectedNode
+  );
+  const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
+  const [graphShouldUpdate, setGraphShouldUpdate] =
+    React.useState<boolean>(true);
 
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
-    const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
 
     useEffect(() => {
       // Create the graph
       const newGraph = new MultiDirectedGraph();
-      if (graphDump !== null) {
+      if (graphDump !== null && (graph === null || graphShouldUpdate)) {
+        setGraphShouldUpdate(false);
         newGraph.import(graphDump);
         setUserCount(newGraph.nodes().length);
         setEdgeCount(newGraph.edges().length);
@@ -38,22 +57,72 @@ const DemoGraph: React.FC<{}> = () => {
               0
             )
         );
+        newGraph?.nodes().forEach((node) => {
+          newGraph?.setNodeAttribute(
+            node,
+            "old-color",
+            newGraph.getNodeAttribute(node, "color")
+          );
+        });
         setGraph(newGraph);
         loadGraph(newGraph);
       }
     }, [loadGraph]);
 
+    // Select Node Effect
+    useEffect(() => {
+      if (
+        graph !== null &&
+        selectedNode !== null &&
+        selectedNode !== previousSelectedNode
+      ) {
+        graph?.edges().forEach((edge) => {
+          graph?.setEdgeAttribute(edge, "hidden", true);
+        });
+        graph?.edges(selectedNode).forEach((edge) => {
+          graph?.setEdgeAttribute(edge, "hidden", false);
+        });
+
+        graph?.nodes().forEach((node) => {
+          graph?.setNodeAttribute(node, "color", "rgba(0, 0, 0, 0.1)");
+        });
+
+        graph.setNodeAttribute(
+          selectedNode,
+          "color",
+          graph.getNodeAttribute(selectedNode, "old-color")
+        );
+
+        graph?.neighbors(selectedNode).forEach((node) => {
+          const oldColor = graph.getNodeAttribute(node, "old-color");
+          graph?.setNodeAttribute(node, "color", oldColor);
+        });
+
+        console.log(
+          `Selected node: ${selectedNode}, previous: ${previousSelectedNode}`
+        );
+      } else if (graph !== null && selectedNode === null) {
+        graph?.edges().forEach((edge) => {
+          graph?.setEdgeAttribute(edge, "hidden", false);
+        });
+        graph?.nodes().forEach((node) => {
+          const oldColor = graph.getNodeAttribute(node, "old-color");
+          graph?.setNodeAttribute(node, "color", oldColor);
+        });
+      }
+    }, [selectedNode]);
+
     useEffect(() => {
       // Register the events
       registerEvents({
-        enterNode: (event: any) => {
-          setHoveredNode(event.node);
+        clickNode: (event: any) => {
+          setSelectedNode(event.node);
         },
-        leaveNode: (_: any) => {
-          setHoveredNode(null);
+        clickStage: (event: any) => {
+          setSelectedNode(null);
         },
       });
-    }, [registerEvents, graph]);
+    }, [registerEvents]);
 
     return null;
   };
@@ -63,8 +132,6 @@ const DemoGraph: React.FC<{}> = () => {
     const responseJSON = await textGraph.json();
     setGraphDump(responseJSON);
   }
-
-  useEffect(() => {}, [hoveredNode]);
 
   useEffect(() => {
     fetchGraph();
