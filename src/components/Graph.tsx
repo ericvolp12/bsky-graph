@@ -228,7 +228,7 @@ const DemoGraph: React.FC<{}> = () => {
       }}
     >
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-5 md:bottom-40 transform -translate-x-1/2">
+      <div className="fixed left-1/2 bottom-5 md:bottom-20 transform -translate-x-1/2">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
