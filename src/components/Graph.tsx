@@ -92,6 +92,7 @@ const DemoGraph: React.FC<{}> = () => {
         });
 
         graph?.nodes().forEach((node) => {
+          graph?.setNodeAttribute(node, "highlighted", false);
           graph?.setNodeAttribute(node, "color", "rgba(0, 0, 0, 0.1)");
         });
 
@@ -100,6 +101,8 @@ const DemoGraph: React.FC<{}> = () => {
           "color",
           graph.getNodeAttribute(selectedNode, "old-color")
         );
+
+        graph.setNodeAttribute(selectedNode, "highlighted", true);
 
         graph?.neighbors(selectedNode).forEach((node) => {
           const oldColor = graph.getNodeAttribute(node, "old-color");
