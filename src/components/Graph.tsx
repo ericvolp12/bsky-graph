@@ -6,6 +6,7 @@ import {
   SigmaContainer,
   useRegisterEvents,
   useLoadGraph,
+  useSigma,
 } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -46,6 +47,7 @@ const DemoGraph: React.FC<{}> = () => {
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
+    const sigma = useSigma();
 
     useEffect(() => {
       // Create the graph
@@ -126,6 +128,7 @@ const DemoGraph: React.FC<{}> = () => {
         setSelectedNodeWeight(0);
         setSelectedNodeEdges(null);
       }
+      sigma.refresh();
     }, [selectedNode]);
 
     useEffect(() => {
@@ -207,7 +210,10 @@ const DemoGraph: React.FC<{}> = () => {
             </div>
           </dl>
           <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2">
-            <CustomSearch style={{ width: "300px" }} />
+            <CustomSearch
+              style={{ width: "300px" }}
+              onLocate={setSelectedNode}
+            />
           </div>
         </div>
       </div>

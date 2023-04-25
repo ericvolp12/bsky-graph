@@ -29,6 +29,8 @@ export interface SearchControlProps {
    * This is usefull for I18N
    */
   labels?: { [Key in SearchLabelKeys]?: string };
+
+  onLocate?: (nodeId: string) => void;
 }
 
 /**
@@ -57,6 +59,7 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
   className,
   style,
   labels = {},
+  onLocate,
 }: SearchControlProps) => {
   // Get sigma
   const sigma = useSigma();
@@ -120,6 +123,10 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
   useEffect(() => {
     if (!selected) {
       return;
+    }
+
+    if (onLocate) {
+      onLocate(selected);
     }
 
     sigma.getGraph().setNodeAttribute(selected, "highlighted", true);
