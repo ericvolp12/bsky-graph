@@ -32,10 +32,13 @@ const DemoGraph: React.FC<{}> = () => {
   const [totalWeight, setTotalWeight] = React.useState<number>(0);
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
   const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(0);
-  const [selectedNodeWeight, setSelectedNodeWeight] = React.useState<number>(0);
+  const [inWeight, setInWeight] = React.useState<number>(0);
+  const [outWeight, setOutWeight] = React.useState<number>(0);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
     string[] | null
   >(null);
+  const [showSecondDegreeNeighbors, setShowSecondDegreeNeighbors] =
+    React.useState<boolean>(false);
 
   const previousSelectedNode: string | null = usePrevious<string | null>(
     selectedNode
@@ -84,35 +87,81 @@ const DemoGraph: React.FC<{}> = () => {
         selectedNode !== null &&
         selectedNode !== previousSelectedNode
       ) {
+        // Hide all edges
         graph?.edges().forEach((edge) => {
           graph?.setEdgeAttribute(edge, "hidden", true);
-        });
-        graph?.edges(selectedNode).forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
+          // Set all edges to a light gray
+          graph?.setEdgeAttribute(edge, "color", "#e0e0e0");
         });
 
+        // Hide or fade all nodes
         graph?.nodes().forEach((node) => {
           graph?.setNodeAttribute(node, "highlighted", false);
-          graph?.setNodeAttribute(node, "color", "rgba(0, 0, 0, 0.1)");
+          if (showSecondDegreeNeighbors) {
+            graph?.setNodeAttribute(node, "hidden", true);
+          } else {
+            graph?.setNodeAttribute(node, "color", "rgba(0,0,0,0.1)");
+          }
         });
 
+        // Get all neighbors of selected node
+        const neighbors = graph?.neighbors(selectedNode);
+
+        // Re-color all nodes connected to selected node
+        graph?.neighbors(selectedNode).forEach((node) => {
+          const oldColor = graph.getNodeAttribute(node, "old-color");
+          graph?.setNodeAttribute(node, "hidden", false);
+          graph?.setNodeAttribute(node, "color", oldColor);
+          // Set all 2nd degree neighbors to a light grey
+          if (showSecondDegreeNeighbors) {
+            graph?.neighbors(node).forEach((neighbor) => {
+              if (!neighbors?.includes(neighbor)) {
+                graph?.setNodeAttribute(neighbor, "hidden", false);
+                graph?.setNodeAttribute(neighbor, "color", "rgba(0,0,0,0.1)");
+              }
+              // Show 2nd degree neighbor edges
+              graph?.edges(node, neighbor).forEach((edge) => {
+                graph?.setEdgeAttribute(edge, "hidden", false);
+              });
+            });
+          }
+        });
+
+        // Re-show edges connected to selected node
+        graph?.inEdges(selectedNode).forEach((edge) => {
+          graph?.setEdgeAttribute(edge, "hidden", false);
+          // Make in-edges a soft sky-blue
+          graph?.setEdgeAttribute(edge, "color", "#4b33ff");
+        });
+
+        graph?.outEdges(selectedNode).forEach((edge) => {
+          graph?.setEdgeAttribute(edge, "hidden", false);
+          // Make out a burnt orange
+          graph?.setEdgeAttribute(edge, "color", "#ff5254");
+        });
+
+        // Re-color selected node and highlight it
         graph.setNodeAttribute(
           selectedNode,
           "color",
           graph.getNodeAttribute(selectedNode, "old-color")
         );
-
         graph.setNodeAttribute(selectedNode, "highlighted", true);
+        graph.setNodeAttribute(selectedNode, "hidden", false);
 
-        graph?.neighbors(selectedNode).forEach((node) => {
-          const oldColor = graph.getNodeAttribute(node, "old-color");
-          graph?.setNodeAttribute(node, "color", oldColor);
-        });
-
+        // Update selected node count and weight for display
         setSelectedNodeCount(graph?.neighbors(selectedNode).length || 0);
-        setSelectedNodeWeight(
+        setInWeight(
           graph
-            ?.edges(selectedNode)
+            ?.inEdges(selectedNode)
+            .reduce(
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              0
+            ) || 0
+        );
+        setOutWeight(
+          graph
+            ?.outEdges(selectedNode)
             .reduce(
               (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
               0
@@ -122,14 +171,18 @@ const DemoGraph: React.FC<{}> = () => {
       } else if (graph !== null && selectedNode === null) {
         graph?.edges().forEach((edge) => {
           graph?.setEdgeAttribute(edge, "hidden", false);
+          graph?.setEdgeAttribute(edge, "color", "#e0e0e0");
         });
         graph?.nodes().forEach((node) => {
           const oldColor = graph.getNodeAttribute(node, "old-color");
           graph?.setNodeAttribute(node, "color", oldColor);
+          graph?.setNodeAttribute(node, "highlighted", false);
+          graph?.setNodeAttribute(node, "hidden", false);
         });
         setSelectedNodeCount(0);
-        setSelectedNodeWeight(0);
         setSelectedNodeEdges(null);
+        setInWeight(0);
+        setOutWeight(0);
       }
       sigma.refresh();
     }, [selectedNode]);
@@ -178,45 +231,67 @@ const DemoGraph: React.FC<{}> = () => {
       <div className="fixed left-1/2 bottom-5 md:bottom-40 transform -translate-x-1/2">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
-            <div className="flex flex-wrap items-baseline bg-white text-center">
+            <div className="flex flex-col items-baseline bg-white text-center">
               <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
                 Users{" "}
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
+              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
                 {selectedNodeCount > 0
                   ? selectedNodeCount.toLocaleString()
                   : userCount.toLocaleString()}
               </dd>
             </div>
-            <div className="flex flex-wrap items-baseline bg-white text-center">
+            <div className="flex flex-col items-baseline bg-white text-center">
               <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
                 Connections{" "}
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
+              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
                 {selectedNodeEdges
                   ? selectedNodeEdges.length.toLocaleString()
                   : edgeCount.toLocaleString()}
               </dd>
             </div>
-            <div className="flex flex-wrap items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
+            <div className="flex flex-col items-baseline bg-white text-center">
+              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4 px-4">
                 Interactions{" "}
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
-              <dd className="w-full flex-none lg:text-3xl text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeWeight > 0
-                  ? selectedNodeWeight.toLocaleString()
+              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                {inWeight > 0 && outWeight > 0
+                  ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
                   : totalWeight.toLocaleString()}
               </dd>
             </div>
           </dl>
-          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2">
+          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 flex">
             <CustomSearch
               style={{ width: "300px" }}
               onLocate={setSelectedNode}
             />
+            <div className="relative flex gap-x-3 ml-4 mt-auto mb-auto">
+              <div className="flex h-6 items-center">
+                <input
+                  id="neighbors"
+                  name="neighbors"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  checked={showSecondDegreeNeighbors}
+                  onChange={() =>
+                    setShowSecondDegreeNeighbors(!showSecondDegreeNeighbors)
+                  }
+                />
+              </div>
+              <div className="text-sm leading-6">
+                <label
+                  htmlFor="neighbors"
+                  className="font-medium text-gray-900"
+                >
+                  2nd° Neighbors
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </div>

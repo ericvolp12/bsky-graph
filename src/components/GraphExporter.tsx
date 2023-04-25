@@ -40,117 +40,131 @@ const DemoGraph: React.FC<{}> = () => {
     const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
 
     useEffect(() => {
-      // Create the graph
-      const newGraph = new MultiDirectedGraph();
-      const totalEdges = edges.length;
-      const totalNodes = nodes.length;
-      const tempNodes: TempNode[] = [];
+      if (edges.length > 0 && nodes.length > 0 && graph === null) {
+        // Create the graph
+        const newGraph = new MultiDirectedGraph();
+        const totalEdges = edges.length;
+        const totalNodes = nodes.length;
+        const tempNodes: TempNode[] = [];
 
-      for (let i = 0; i < totalNodes; i++) {
-        if (i % 100 === 0) {
-          console.log(`Adding node ${i} of ${totalNodes - 1}`);
-        }
-        const node = nodes[i];
-        const tempNode = {
-          key: i,
-          did: node.did,
-          label: node.handle,
-        };
-        const slimNode = {
-          key: i,
-          label: node.handle,
-        };
-        newGraph.addNode(i, slimNode);
-        tempNodes.push(tempNode);
-      }
-
-      // First, find the minimum and maximum weights in the graph
-      let minWeight = Infinity;
-      let maxWeight = -Infinity;
-
-      for (let i = 0; i < totalEdges; i++) {
-        const edge = edges[i];
-        minWeight = Math.min(minWeight, edge.weight);
-        maxWeight = Math.max(maxWeight, edge.weight);
-      }
-
-      // Then, set the size of each edge based on its weight relative to the min and max weights
-      for (let i = 0; i < totalEdges; i++) {
-        if (i % 100 === 0) {
-          console.log(`Adding edge ${i} of ${totalEdges - 1}`);
-        }
-        const edge = edges[i];
-
-        // Calculate the size based on the edge weight relative to the range of weights
-        const size =
-          1 + ((edge.weight - minWeight) / (maxWeight - minWeight)) * (10 - 1);
-
-        newGraph.addEdge(
-          tempNodes.find((node) => node.did === edge.source)?.key,
-          tempNodes.find((node) => node.did === edge.target)?.key,
-          {
-            weight: edge.weight,
-            size: parseFloat(size.toFixed(2)),
+        for (let i = 0; i < totalNodes; i++) {
+          if (i % 100 === 0) {
+            console.log(`Adding node ${i} of ${totalNodes - 1}`);
           }
-        );
-      }
-
-      const degrees = newGraph.nodes().map((node) => newGraph.degree(node));
-      const minDegree = Math.min(...degrees);
-      const maxDegree = Math.max(...degrees);
-      const skyBluePalette = [
-        "#009ACD", // DeepSkyBlue3
-        "#5B9BD5", // CornflowerBlue
-        "#7EC0EE", // SkyBlue2
-        "#87CEFA", // LightSkyBlue1
-        "#4A708B", // SkyBlue4
-        "#1E90FF", // DodgerBlue
-        "#00BFFF", // DeepSkyBlue
-        "#3CB371", // MediumSeaGreen
-        "#FF7F50", // Coral
-        "#FF4500", // OrangeRed
-      ];
-      const minSize = 2,
-        maxSize = 15;
-      console.log("Assigning attributes...");
-      newGraph.forEachNode((node) => {
-        const degree = newGraph.degree(node);
-        // Set the size based on the degree of the node relative to the min and max degrees
-        let newNodeSize =
-          minSize +
-          ((degree - minDegree) / (maxDegree - minDegree)) *
-            (maxSize - minSize);
-
-        // Round to 2 decimal places to conserve bits in the exported graph
-        if (newNodeSize > 1) {
-          newNodeSize = parseFloat(newNodeSize.toFixed(2));
+          const node = nodes[i];
+          const tempNode = {
+            key: i,
+            did: node.did,
+            label: node.handle,
+          };
+          const slimNode = {
+            key: i,
+            label: node.handle,
+          };
+          newGraph.addNode(i, slimNode);
+          tempNodes.push(tempNode);
         }
-        newGraph.setNodeAttribute(node, "size", newNodeSize);
-        // Set a random color
-        newGraph.setNodeAttribute(
-          node,
-          "color",
-          skyBluePalette[Math.floor(Math.random() * 10)]
-        );
-      });
-      console.log("Assigning layout...");
-      circular.assign(newGraph);
-      const settings = forceAtlas2.inferSettings(newGraph);
-      console.log("Running Force Atlas...");
-      forceAtlas2.assign(newGraph, { settings, iterations: 600 });
-      console.log("Done running Force Atlas");
-      // Reduce precision on node x and y coordinates to conserve bits in the exported graph
-      newGraph.forEachNode((node) => {
-        const x = newGraph.getNodeAttribute(node, "x");
-        const y = newGraph.getNodeAttribute(node, "y");
-        newGraph.setNodeAttribute(node, "x", parseFloat(x.toFixed(3)));
-        newGraph.setNodeAttribute(node, "y", parseFloat(y.toFixed(3)));
-      });
 
-      console.log(newGraph.export());
-      setGraph(newGraph);
-      loadGraph(newGraph);
-    }, [loadGraph]);
+        // First, find the minimum and maximum weights in the graph
+        let minWeight = Infinity;
+        let maxWeight = -Infinity;
+
+        for (let i = 0; i < totalEdges; i++) {
+          const edge = edges[i];
+          minWeight = Math.min(minWeight, edge.weight);
+          maxWeight = Math.max(maxWeight, edge.weight);
+        }
+
+        // Then, set the size of each edge based on its weight relative to the min and max weights
+        for (let i = 0; i < totalEdges; i++) {
+          if (i % 100 === 0) {
+            console.log(`Adding edge ${i} of ${totalEdges - 1}`);
+          }
+          const edge = edges[i];
+
+          // Calculate the size based on the logarithm of the edge weight relative to the range of weights
+          const size =
+            0.2 +
+            ((Math.log(edge.weight) - Math.log(minWeight)) /
+              (Math.log(maxWeight) - Math.log(minWeight))) *
+              (6 - 0.2);
+
+          newGraph.addEdge(
+            tempNodes.find((node) => node.did === edge.source)?.key,
+            tempNodes.find((node) => node.did === edge.target)?.key,
+            {
+              weight: edge.weight,
+              size: parseFloat(size.toFixed(2)),
+            }
+          );
+        }
+
+        const degrees = newGraph.nodes().map((node) => newGraph.degree(node));
+        const minDegree = Math.min(...degrees);
+        const maxDegree = Math.max(...degrees);
+        const skyBluePalette = [
+          "#009ACD", // DeepSkyBlue3
+          "#5B9BD5", // CornflowerBlue
+          "#7EC0EE", // SkyBlue2
+          "#87CEFA", // LightSkyBlue1
+          "#4A708B", // SkyBlue4
+          "#1E90FF", // DodgerBlue
+          "#00BFFF", // DeepSkyBlue
+          "#3CB371", // MediumSeaGreen
+          "#FF7F50", // Coral
+          "#FF4500", // OrangeRed
+        ];
+        const minSize = 1.5,
+          maxSize = 15;
+        console.log("Assigning attributes...");
+        newGraph.forEachNode((node) => {
+          const degree = newGraph.inDegreeWithoutSelfLoops(node);
+          // Set the size based on the degree of the node relative to the min and max degrees
+          let newNodeSize =
+            minSize +
+            Math.sqrt((degree - minDegree) / (maxDegree - minDegree)) *
+              (maxSize - minSize);
+
+          // Calculate the radius of the circle based on the size
+          let radius = newNodeSize / 2;
+
+          // Calculate the area of the circle based on the radius
+          let area = Math.PI * radius * radius;
+
+          // Round to 2 decimal places to conserve bits in the exported graph
+          if (newNodeSize > 1) {
+            newNodeSize = parseFloat(newNodeSize.toFixed(2));
+            area = parseFloat(area.toFixed(2));
+          }
+          newGraph.setNodeAttribute(node, "size", newNodeSize);
+          newGraph.setNodeAttribute(node, "area", area);
+          // Set a random color
+          newGraph.setNodeAttribute(
+            node,
+            "color",
+            skyBluePalette[Math.floor(Math.random() * 10)]
+          );
+        });
+
+        console.log("Assigning layout...");
+        circular.assign(newGraph);
+        const settings = forceAtlas2.inferSettings(newGraph);
+        console.log("Running Force Atlas...");
+        forceAtlas2.assign(newGraph, { settings, iterations: 600 });
+        console.log("Done running Force Atlas");
+        // Reduce precision on node x and y coordinates to conserve bits in the exported graph
+        newGraph.forEachNode((node) => {
+          const x = newGraph.getNodeAttribute(node, "x");
+          const y = newGraph.getNodeAttribute(node, "y");
+          newGraph.setNodeAttribute(node, "x", parseFloat(x.toFixed(3)));
+          newGraph.setNodeAttribute(node, "y", parseFloat(y.toFixed(3)));
+        });
+
+        console.log(newGraph.export());
+        setGraph(newGraph);
+        loadGraph(newGraph);
+      }
+    }, []);
 
     return null;
   };
@@ -208,9 +222,6 @@ const DemoGraph: React.FC<{}> = () => {
       }}
     >
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-40 transform -translate-x-1/2">
-        <CustomSearch style={{ width: "200px" }} />
-      </div>
     </SigmaContainer>
   );
 };
