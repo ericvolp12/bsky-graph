@@ -10,7 +10,6 @@ import {
 import "@react-sigma/core/lib/react-sigma.min.css";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import circular from "graphology-layout/circular";
-import { CustomSearch } from "./CustomSearch";
 
 interface Edge {
   source: string;
@@ -35,9 +34,7 @@ const DemoGraph: React.FC<{}> = () => {
 
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
-    const registerEvents = useRegisterEvents();
     const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
-    const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
 
     useEffect(() => {
       if (edges.length > 0 && nodes.length > 0 && graph === null) {
