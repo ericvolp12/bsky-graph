@@ -193,7 +193,16 @@ const DemoGraph: React.FC<{}> = () => {
         clickNode: (event: any) => {
           setSelectedNode(event.node);
         },
-        clickStage: (event: any) => {
+        doubleClickNode: (event: any) => {
+          window.open(
+            `https://staging.bsky.app/profile/${graph?.getNodeAttribute(
+              event.node,
+              "label"
+            )}`,
+            "_blank"
+          );
+        },
+        clickStage: (_: any) => {
           setSelectedNode(null);
         },
       });
