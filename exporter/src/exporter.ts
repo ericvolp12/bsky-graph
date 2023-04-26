@@ -93,11 +93,13 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   // First, find the minimum and maximum weights in the graph
   let minWeight = Infinity;
   let maxWeight = -Infinity;
+  let totalWeight = 0;
 
   for (let i = 0; i < totalEdges; i++) {
     const edge = edges[i];
     minWeight = Math.min(minWeight, edge.weight);
     maxWeight = Math.max(maxWeight, edge.weight);
+    totalWeight += edge.weight;
   }
 
   const logMinWeight = Math.log(minWeight);
@@ -198,6 +200,10 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   fs.writeFileSync(
     "../public/exported_graph_minified.json",
     JSON.stringify(graph.export())
+  );
+  // Log total number of nodes, edges, and graph weight
+  log(
+    `Users: ${graph.order.toLocaleString()} Connections: ${graph.size.toLocaleString()} Interactions: ${totalWeight.toLocaleString()}`
   );
   log("Done exporting graph");
 });
