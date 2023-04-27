@@ -168,7 +168,7 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
   };
 
   return (
-    <div {...htmlProps} className="w-auto">
+    <div {...htmlProps} className="w-full">
       <label htmlFor={inputId} style={{ display: "none" }}>
         {labels["text"] || "Search a node"}
       </label>

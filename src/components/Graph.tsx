@@ -237,7 +237,7 @@ const DemoGraph: React.FC<{}> = () => {
       }}
     >
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-5 md:bottom-20 transform -translate-x-1/2">
+      <div className="fixed left-1/2 bottom-5 md:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -274,12 +274,11 @@ const DemoGraph: React.FC<{}> = () => {
               </dd>
             </div>
           </dl>
-          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 flex">
-            <CustomSearch
-              style={{ width: "300px" }}
-              onLocate={setSelectedNode}
-            />
-            <div className="relative flex gap-x-3 ml-4 mt-auto mb-auto">
+          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3">
+            <div className="col-span-2">
+              <CustomSearch onLocate={setSelectedNode} />
+            </div>
+            <div className="relative flex gap-x-3 ml-4 mt-auto mb-auto w-full">
               <div className="flex h-6 items-center">
                 <input
                   id="neighbors"
@@ -292,12 +291,13 @@ const DemoGraph: React.FC<{}> = () => {
                   }
                 />
               </div>
-              <div className="text-sm leading-6">
+              <div className="md:text-sm text-xs leading-6">
                 <label
                   htmlFor="neighbors"
                   className="font-medium text-gray-900"
                 >
-                  2nd° Neighbors
+                  2°<span className="hidden md:inline"> Neighbors</span>
+                  <span className="md:hidden">Neigh...</span>
                 </label>
               </div>
             </div>
