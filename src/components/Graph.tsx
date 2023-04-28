@@ -25,6 +25,61 @@ function usePrevious<T>(value: T): T {
   return ref.current;
 }
 
+interface Edge {
+  source: string;
+  target: string;
+  weight: number;
+  ogWeight: number;
+}
+
+interface Node {
+  key: number;
+  size: number;
+  label: string;
+}
+
+interface MootNode {
+  node: string;
+  label: string;
+  weight: number;
+}
+
+function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
+  const edgeMap = new Map<string, Edge>();
+  graph?.edges().forEach((edge) => {
+    const source = graph?.source(edge);
+    const target = graph?.target(edge);
+    const weight = graph?.getEdgeAttribute(edge, "weight");
+    const ogWeight = graph?.getEdgeAttribute(edge, "ogWeight");
+    if (source !== undefined && target !== undefined && weight !== null) {
+      edgeMap.set(edge, {
+        source: source,
+        target: target,
+        weight: weight,
+        ogWeight: ogWeight,
+      });
+    }
+  });
+  return edgeMap;
+}
+
+function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
+  const nodeMap = new Map<string, Node>();
+  graph?.nodes().forEach((node) => {
+    const key = graph?.getNodeAttribute(node, "key");
+    const size = graph?.getNodeAttribute(node, "size");
+    const label = graph?.getNodeAttribute(node, "label");
+    if (key !== undefined && size !== undefined && label !== undefined) {
+      nodeMap.set(node, {
+        key: key,
+        size: size,
+        label: label,
+      });
+    }
+  });
+  return nodeMap;
+}
+
 const DemoGraph: React.FC<{}> = () => {
   const [graphDump, setGraphDump] = React.useState<any>(null);
   const [userCount, setUserCount] = React.useState<number>(0);
@@ -47,6 +102,12 @@ const DemoGraph: React.FC<{}> = () => {
   const [graphShouldUpdate, setGraphShouldUpdate] =
     React.useState<boolean>(true);
 
+  const [mootList, setMootList] = React.useState<MootNode[]>([]);
+  const [showMootList, setShowMootList] = React.useState<boolean>(true);
+
+  const [edgeMap, setEdgeMap] = React.useState<Map<string, Edge>>(new Map());
+  const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
+
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
@@ -58,13 +119,20 @@ const DemoGraph: React.FC<{}> = () => {
       if (graphDump !== null && (graph === null || graphShouldUpdate)) {
         setGraphShouldUpdate(false);
         newGraph.import(graphDump);
+
+        // Construct the edge and node maps
+        const newEdgeMap = constructEdgeMap(newGraph);
+        const newNodeMap = constructNodeMap(newGraph);
+        setEdgeMap(newEdgeMap);
+        setNodeMap(newNodeMap);
+
         setUserCount(newGraph.nodes().length);
         setEdgeCount(newGraph.edges().length);
         setTotalWeight(
           newGraph
             .edges()
             .reduce(
-              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
               0
             )
         );
@@ -106,6 +174,27 @@ const DemoGraph: React.FC<{}> = () => {
 
         // Get all neighbors of selected node
         const neighbors = graph?.neighbors(selectedNode);
+
+        // Build the MootList, an ordered list of neighbors by weight
+        const mootList: MootNode[] = [];
+        neighbors?.forEach((neighbor) => {
+          if (neighbor !== selectedNode) {
+            const weight = graph?.getEdgeAttribute(
+              graph?.edges(selectedNode, neighbor)[0],
+              "weight"
+            );
+            if (weight !== undefined) {
+              mootList.push({
+                node: neighbor,
+                weight: weight,
+                label: graph.getNodeAttribute(neighbor, "label"),
+              });
+            }
+          }
+        });
+        mootList.sort((a, b) => b.weight - a.weight);
+
+        setMootList(mootList);
 
         // Re-color all nodes connected to selected node
         graph?.neighbors(selectedNode).forEach((node) => {
@@ -155,7 +244,7 @@ const DemoGraph: React.FC<{}> = () => {
           graph
             ?.inEdges(selectedNode)
             .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
               0
             ) || 0
         );
@@ -163,7 +252,7 @@ const DemoGraph: React.FC<{}> = () => {
           graph
             ?.outEdges(selectedNode)
             .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
               0
             ) || 0
         );
@@ -236,8 +325,69 @@ const DemoGraph: React.FC<{}> = () => {
         zIndex: true,
       }}
     >
+      {selectedNode !== null && mootList.length > 0 && (
+        <div className="overflow-hidden bg-white shadow sm:rounded-md fixed left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto">
+          <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+            <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+              <div className="ml-4 mt-2">
+                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                  Moot List
+                </h3>
+              </div>
+              <div className="ml-4 mt-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowMootList(!showMootList)}
+                  className={
+                    `relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
+                    (showMootList
+                      ? " bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+                      : " bg-green-500 hover:bg-green-600 focus-visible:ring-green-500")
+                  }
+                >
+                  {showMootList ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 max-w-xl text-sm text-gray-500">
+              <p>
+                These are the top 10 moots that{" "}
+                <span className="font-bold">
+                  {graph?.getNodeAttribute(selectedNode, "label")}
+                </span>{" "}
+                has interacted with.
+              </p>
+            </div>
+          </div>
+          <ul
+            role="list"
+            className="divide-y divide-gray-200 max-h-96 md:max-h-screen overflow-scroll"
+          >
+            {showMootList &&
+              mootList.slice(0, 10).map((moot) => (
+                <li key={moot.node} className="px-4 py-3 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      <a
+                        href={`https://staging.bsky.app/profile/${moot.label}`}
+                        target="_blank"
+                      >
+                        {moot.label}
+                      </a>
+                    </div>
+                    <div className="ml-2 flex-shrink-0 flex">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        {moot.weight}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-5 md:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
+      <div className="fixed left-1/2 bottom-5 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
