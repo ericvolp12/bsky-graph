@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { MultiDirectedGraph } from "graphology";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
@@ -81,10 +82,18 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
 }
 
 const DemoGraph: React.FC<{}> = () => {
+  // Router info
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Graph raw data
   const [graphDump, setGraphDump] = React.useState<any>(null);
+
+  // Graph stats
   const [userCount, setUserCount] = React.useState<number>(0);
   const [edgeCount, setEdgeCount] = React.useState<number>(0);
   const [totalWeight, setTotalWeight] = React.useState<number>(0);
+
+  // Selected Node properties
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
   const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(0);
   const [inWeight, setInWeight] = React.useState<number>(0);
@@ -98,10 +107,13 @@ const DemoGraph: React.FC<{}> = () => {
   const previousSelectedNode: string | null = usePrevious<string | null>(
     selectedNode
   );
+
+  // Graph State
   const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
   const [graphShouldUpdate, setGraphShouldUpdate] =
     React.useState<boolean>(true);
 
+  // Moot List State
   const [mootList, setMootList] = React.useState<MootNode[]>([]);
   const [showMootList, setShowMootList] = React.useState<boolean>(true);
 
@@ -126,6 +138,9 @@ const DemoGraph: React.FC<{}> = () => {
         setEdgeMap(newEdgeMap);
         setNodeMap(newNodeMap);
 
+        const selectedUserFromParams = searchParams.get("s");
+        const showMootListFromParams = searchParams.get("ml");
+
         setUserCount(newGraph.nodes().length);
         setEdgeCount(newGraph.edges().length);
         setTotalWeight(
@@ -142,11 +157,17 @@ const DemoGraph: React.FC<{}> = () => {
             "old-color",
             newGraph.getNodeAttribute(node, "color")
           );
+          if (
+            selectedUserFromParams === newGraph?.getNodeAttribute(node, "label")
+          ) {
+            setSelectedNode(node);
+          }
         });
+        setShowMootList(showMootListFromParams === "true");
         setGraph(newGraph);
         loadGraph(newGraph);
       }
-    }, [loadGraph]);
+    }, [loadGraph, searchParams]);
 
     // Select Node Effect
     useEffect(() => {
@@ -280,6 +301,11 @@ const DemoGraph: React.FC<{}> = () => {
       // Register the events
       registerEvents({
         clickNode: (event: any) => {
+          const nodeLabel = graph?.getNodeAttribute(event.node, "label");
+          setSearchParams({
+            s: `${nodeLabel}`,
+            ml: `${showMootList}`,
+          });
           setSelectedNode(event.node);
         },
         doubleClickNode: (event: any) => {
@@ -292,6 +318,7 @@ const DemoGraph: React.FC<{}> = () => {
           );
         },
         clickStage: (_: any) => {
+          setSearchParams({});
           setSelectedNode(null);
         },
       });
@@ -337,7 +364,13 @@ const DemoGraph: React.FC<{}> = () => {
               <div className="ml-4 mt-2 flex-shrink-0">
                 <button
                   type="button"
-                  onClick={() => setShowMootList(!showMootList)}
+                  onClick={() => {
+                    setShowMootList(!showMootList);
+                    setSearchParams({
+                      s: `${graph?.getNodeAttribute(selectedNode, "label")}`,
+                      ml: `${!showMootList}`,
+                    });
+                  }}
                   className={
                     `relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
                     (showMootList
@@ -426,7 +459,16 @@ const DemoGraph: React.FC<{}> = () => {
           </dl>
           <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3">
             <div className="col-span-2">
-              <CustomSearch onLocate={setSelectedNode} />
+              <CustomSearch
+                onLocate={(node) => {
+                  const nodeLabel = graph?.getNodeAttribute(node, "label");
+                  setSearchParams({
+                    s: `${nodeLabel}`,
+                    ml: `${showMootList}`,
+                  });
+                  setSelectedNode(node);
+                }}
+              />
             </div>
             <div className="relative flex gap-x-3 ml-4 mt-auto mb-auto w-full">
               <div className="flex h-6 items-center">
