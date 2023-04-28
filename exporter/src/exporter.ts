@@ -90,6 +90,13 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   log("Done adding nodes");
 
+  // Create a map of edges for quick reverse lookups
+  const edgeMap: Map<string, Edge> = new Map();
+  for (let i = 0; i < totalEdges; i++) {
+    const edge = edges[i];
+    edgeMap.set(`${edge.source}-${edge.target}`, edge);
+  }
+
   // First, find the minimum and maximum weights in the graph
   let minWeight = Infinity;
   let maxWeight = -Infinity;
@@ -113,17 +120,27 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     }
     const edge = edges[i];
 
+    let weight = edge.weight;
+    const partnerEdge = edgeMap.get(`${edge.target}-${edge.source}`);
+    if (partnerEdge !== undefined) {
+      const bothEdgeWeight = edge.weight + partnerEdge.weight;
+      const mutualityRatio =
+        edge.weight / bothEdgeWeight + partnerEdge.weight / bothEdgeWeight;
+      weight = mutualityRatio * bothEdgeWeight * (1 + Math.log(bothEdgeWeight));
+    }
+
     // Calculate the size based on the logarithm of the edge weight relative to the range of weights
     const size =
       0.2 +
-      ((Math.log(edge.weight) - logMinWeight) / (logMaxWeight - logMinWeight)) *
+      ((Math.log(weight) - logMinWeight) / (logMaxWeight - logMinWeight)) *
         (6 - 0.2);
 
     graph.addEdge(
       indexNodes.get(edge.source)?.key,
       indexNodes.get(edge.target)?.key,
       {
-        weight: edge.weight,
+        ogWeight: edge.weight,
+        weight: parseFloat(weight.toFixed(2)),
         size: parseFloat(size.toFixed(2)),
       }
     );
@@ -164,12 +181,12 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     let area = Math.PI * radius * radius;
 
     // Round to 2 decimal places to conserve bits in the exported graph
-    if (newNodeSize > 1) {
-      newNodeSize = parseFloat(newNodeSize.toFixed(2));
-      area = parseFloat(area.toFixed(2));
-    }
+    newNodeSize = parseFloat(newNodeSize.toFixed(2));
+    area = parseFloat(area.toFixed(2));
+
     graph.setNodeAttribute(node, "size", newNodeSize);
     graph.setNodeAttribute(node, "area", area);
+
     // Set a random color
     graph.setNodeAttribute(
       node,

@@ -25,6 +25,55 @@ function usePrevious<T>(value: T): T {
   return ref.current;
 }
 
+interface Edge {
+  source: string;
+  target: string;
+  weight: number;
+  ogWeight: number;
+}
+
+interface Node {
+  key: number;
+  size: number;
+  label: string;
+}
+
+function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
+  const edgeMap = new Map<string, Edge>();
+  graph?.edges().forEach((edge) => {
+    const source = graph?.source(edge);
+    const target = graph?.target(edge);
+    const weight = graph?.getEdgeAttribute(edge, "weight");
+    const ogWeight = graph?.getEdgeAttribute(edge, "ogWeight");
+    if (source !== undefined && target !== undefined && weight !== null) {
+      edgeMap.set(edge, {
+        source: source,
+        target: target,
+        weight: weight,
+        ogWeight: ogWeight,
+      });
+    }
+  });
+  return edgeMap;
+}
+
+function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
+  const nodeMap = new Map<string, Node>();
+  graph?.nodes().forEach((node) => {
+    const key = graph?.getNodeAttribute(node, "key");
+    const size = graph?.getNodeAttribute(node, "size");
+    const label = graph?.getNodeAttribute(node, "label");
+    if (key !== undefined && size !== undefined && label !== undefined) {
+      nodeMap.set(node, {
+        key: key,
+        size: size,
+        label: label,
+      });
+    }
+  });
+  return nodeMap;
+}
+
 const DemoGraph: React.FC<{}> = () => {
   const [graphDump, setGraphDump] = React.useState<any>(null);
   const [userCount, setUserCount] = React.useState<number>(0);
@@ -47,6 +96,9 @@ const DemoGraph: React.FC<{}> = () => {
   const [graphShouldUpdate, setGraphShouldUpdate] =
     React.useState<boolean>(true);
 
+  const [edgeMap, setEdgeMap] = React.useState<Map<string, Edge>>(new Map());
+  const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
+
   const SocialGraph: FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
@@ -58,13 +110,20 @@ const DemoGraph: React.FC<{}> = () => {
       if (graphDump !== null && (graph === null || graphShouldUpdate)) {
         setGraphShouldUpdate(false);
         newGraph.import(graphDump);
+
+        // Construct the edge and node maps
+        const newEdgeMap = constructEdgeMap(newGraph);
+        const newNodeMap = constructNodeMap(newGraph);
+        setEdgeMap(newEdgeMap);
+        setNodeMap(newNodeMap);
+
         setUserCount(newGraph.nodes().length);
         setEdgeCount(newGraph.edges().length);
         setTotalWeight(
           newGraph
             .edges()
             .reduce(
-              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
               0
             )
         );
@@ -155,7 +214,7 @@ const DemoGraph: React.FC<{}> = () => {
           graph
             ?.inEdges(selectedNode)
             .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
               0
             ) || 0
         );
@@ -163,7 +222,7 @@ const DemoGraph: React.FC<{}> = () => {
           graph
             ?.outEdges(selectedNode)
             .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "weight"),
+              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
               0
             ) || 0
         );
