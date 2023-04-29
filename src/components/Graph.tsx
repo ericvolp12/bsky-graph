@@ -1,8 +1,7 @@
 import React, { FC, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MultiDirectedGraph } from "graphology";
-import dayjs from "dayjs";
-import * as relativeTime from "dayjs/plugin/relativeTime";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import {
   SigmaContainer,
@@ -13,8 +12,6 @@ import {
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
-
-dayjs.extend(relativeTime);
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -531,7 +528,9 @@ const SocialGraph: React.FC<{}> = () => {
           <span className="footer-text text-xs">
             {" | "}
             {graph
-              ? dayjs().to(graph?.getAttribute("lastUpdated"))
+              ? formatDistanceToNow(
+                  parseISO(graph?.getAttribute("lastUpdated"))
+                )
               : "loading..."}{" "}
             <img src="/update-icon.svg" className="inline-block h-4 w-4" />
             {" | "}
