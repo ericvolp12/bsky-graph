@@ -1,8 +1,6 @@
 import React, { FC, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MultiDirectedGraph } from "graphology";
-import * as dayjs from "dayjs";
-import * as relativeTime from "dayjs/plugin/relativeTime";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import {
   SigmaContainer,
@@ -13,8 +11,6 @@ import {
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
-
-dayjs.extend(relativeTime);
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -526,19 +522,16 @@ const SocialGraph: React.FC<{}> = () => {
             >
               jaz
             </a>
-            {" 🏳️‍⚧️"}
-          </span>
-          <span className="footer-text text-xs">
-            {" | "}
-            {dayjs().to(graph?.getAttribute("lastUpdated"))}{" "}
-            <img src="/update-icon.svg" className="inline-block h-4 w-4" />
-            {" | "}
+            {" 🏳️‍⚧️ "}
             <a
               href="https://github.com/ericvolp12/bsky-experiments"
               target="_blank"
             >
               <img src="/github.svg" className="inline-block h-4 w-4" />
             </a>
+          </span>
+          <span className="footer-text text-xs">
+            {" | "}Updated: {graph?.getAttribute("lastUpdated")}
           </span>
         </div>
       </footer>
