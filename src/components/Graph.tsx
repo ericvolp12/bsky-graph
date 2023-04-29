@@ -81,7 +81,7 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   return nodeMap;
 }
 
-const DemoGraph: React.FC<{}> = () => {
+const SocialGraph: React.FC<{}> = () => {
   // Router info
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -430,7 +430,7 @@ const DemoGraph: React.FC<{}> = () => {
         </div>
       )}
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-5 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
+      <div className="fixed left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -506,8 +506,29 @@ const DemoGraph: React.FC<{}> = () => {
           </div>
         </div>
       </div>
+      <footer className="bg-white fixed bottom-0 text-center w-full">
+        <div className="mx-auto max-w-7xl px-2">
+          <span className="footer-text text-xs">
+            Built by{" "}
+            <a
+              href="https://staging.bsky.app/profile/jaz.bsky.social"
+              target="_blank"
+              className="font-bold underline-offset-1 underline"
+            >
+              jaz
+            </a>{" "}
+            🏳️‍⚧️{" "}
+            <a
+              href="https://github.com/ericvolp12/bsky-experiments"
+              target="_blank"
+            >
+              <img src="/github.svg" className="inline-block h-4 w-4" />
+            </a>
+          </span>
+        </div>
+      </footer>
     </SigmaContainer>
   );
 };
 
-export default DemoGraph;
+export default SocialGraph;

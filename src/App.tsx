@@ -1,4 +1,4 @@
-import DemoGraph from "./components/Graph";
+import SocialGraph from "./components/Graph";
 import "./App.css";
 import {
   BrowserRouter,
@@ -9,7 +9,7 @@ import {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <DemoGraph />,
+    element: <SocialGraph />,
   },
 ]);
 

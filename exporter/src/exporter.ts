@@ -195,6 +195,11 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     );
   });
 
+  // Log total number of nodes, edges, and graph weight
+  log(
+    `Users: ${graph.order.toLocaleString()} Connections: ${graph.size.toLocaleString()} Interactions: ${totalWeight.toLocaleString()}`
+  );
+
   log("Assigning layout...");
   circular.assign(graph);
   const settings = forceAtlas2.inferSettings(graph);
@@ -207,8 +212,8 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   graph.forEachNode((node) => {
     const x = graph.getNodeAttribute(node, "x");
     const y = graph.getNodeAttribute(node, "y");
-    graph.setNodeAttribute(node, "x", parseFloat(x.toFixed(3)));
-    graph.setNodeAttribute(node, "y", parseFloat(y.toFixed(3)));
+    graph.setNodeAttribute(node, "x", parseFloat(x.toFixed(2)));
+    graph.setNodeAttribute(node, "y", parseFloat(y.toFixed(2)));
   });
   log("Done truncating node position assignments");
 
@@ -217,10 +222,6 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   fs.writeFileSync(
     "../public/exported_graph_minified.json",
     JSON.stringify(graph.export())
-  );
-  // Log total number of nodes, edges, and graph weight
-  log(
-    `Users: ${graph.order.toLocaleString()} Connections: ${graph.size.toLocaleString()} Interactions: ${totalWeight.toLocaleString()}`
   );
   log("Done exporting graph");
 });
