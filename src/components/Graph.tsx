@@ -71,7 +71,7 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
     const size = graph?.getNodeAttribute(node, "size");
     const label = graph?.getNodeAttribute(node, "label");
     if (key !== undefined && size !== undefined && label !== undefined) {
-      nodeMap.set(node, {
+      nodeMap.set(label, {
         key: key,
         size: size,
         label: label,
@@ -81,7 +81,7 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   return nodeMap;
 }
 
-const SocialGraph: React.FC<{}> = () => {
+const GraphContainer: React.FC<{}> = () => {
   // Router info
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -141,9 +141,6 @@ const SocialGraph: React.FC<{}> = () => {
         setEdgeMap(newEdgeMap);
         setNodeMap(newNodeMap);
 
-        const selectedUserFromParams = searchParams.get("s");
-        const showMootListFromParams = searchParams.get("ml");
-
         setUserCount(newGraph.nodes().length);
         setEdgeCount(newGraph.edges().length);
         setTotalWeight(
@@ -160,17 +157,12 @@ const SocialGraph: React.FC<{}> = () => {
             "old-color",
             newGraph.getNodeAttribute(node, "color")
           );
-          if (
-            selectedUserFromParams === newGraph?.getNodeAttribute(node, "label")
-          ) {
-            setSelectedNode(node);
-          }
         });
-        setShowMootList(showMootListFromParams === "true");
+
         setGraph(newGraph);
         loadGraph(newGraph);
       }
-    }, [loadGraph, searchParams]);
+    }, [loadGraph]);
 
     // Select Node Effect
     useEffect(() => {
@@ -312,7 +304,6 @@ const SocialGraph: React.FC<{}> = () => {
             newParams.ml = `${showMootList}`;
           }
           setSearchParams(newParams);
-          setSelectedNode(event.node);
         },
         doubleClickNode: (event: any) => {
           window.open(
@@ -325,7 +316,6 @@ const SocialGraph: React.FC<{}> = () => {
         },
         clickStage: (_: any) => {
           setSearchParams({});
-          setSelectedNode(null);
         },
       });
     }, [registerEvents]);
@@ -338,6 +328,20 @@ const SocialGraph: React.FC<{}> = () => {
     const responseJSON = await textGraph.json();
     setGraphDump(responseJSON);
   }
+
+  useEffect(() => {
+    const selectedUserFromParams = searchParams.get("s");
+    const showMootListFromParams = searchParams.get("ml");
+    if (selectedUserFromParams !== null) {
+      const selectedNodeKey = nodeMap.get(selectedUserFromParams)?.key;
+      if (selectedNodeKey !== undefined) {
+        setSelectedNode(selectedNodeKey.toString());
+      }
+    } else {
+      setSelectedNode(null);
+    }
+    setShowMootList(showMootListFromParams === "true");
+  }, [searchParams, nodeMap]);
 
   useEffect(() => {
     fetchGraph();
@@ -478,11 +482,13 @@ const SocialGraph: React.FC<{}> = () => {
               <CustomSearch
                 onLocate={(node) => {
                   const nodeLabel = graph?.getNodeAttribute(node, "label");
-                  setSearchParams({
+                  let newParams: { s?: string; ml?: string } = {
                     s: `${nodeLabel}`,
-                    ml: `${showMootList}`,
-                  });
-                  setSelectedNode(node);
+                  };
+                  if (showMootList) {
+                    newParams.ml = `${showMootList}`;
+                  }
+                  setSearchParams(newParams);
                 }}
               />
             </div>
@@ -551,4 +557,4 @@ const SocialGraph: React.FC<{}> = () => {
   );
 };
 
-export default SocialGraph;
+export default GraphContainer;

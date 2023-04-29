@@ -1,4 +1,4 @@
-import SocialGraph from "./components/Graph";
+import GraphContainer from "./components/Graph";
 import "./App.css";
 import {
   BrowserRouter,
@@ -9,7 +9,7 @@ import {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <SocialGraph />,
+    element: <GraphContainer />,
   },
 ]);
 
