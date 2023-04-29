@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MultiDirectedGraph } from "graphology";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import {
   SigmaContainer,
@@ -522,16 +523,27 @@ const SocialGraph: React.FC<{}> = () => {
             >
               jaz
             </a>
-            {" 🏳️‍⚧️ "}
+            {" 🏳️‍⚧️"}
+          </span>
+          <span className="footer-text text-xs">
+            {" | "}
+            {graph
+              ? formatDistanceToNow(
+                  parseISO(graph?.getAttribute("lastUpdated")),
+                  { addSuffix: true }
+                )
+              : "loading..."}{" "}
+            <img src="/update-icon.svg" className="inline-block h-4 w-4" />
+            {" | "}
             <a
               href="https://github.com/ericvolp12/bsky-experiments"
               target="_blank"
             >
-              <img src="/github.svg" className="inline-block h-4 w-4" />
+              <img
+                src="/github.svg"
+                className="inline-block h-3.5 w-4 mb-0.5"
+              />
             </a>
-          </span>
-          <span className="footer-text text-xs">
-            {" | "}Updated: {graph?.getAttribute("lastUpdated")}
           </span>
         </div>
       </footer>
