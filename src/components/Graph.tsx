@@ -168,7 +168,8 @@ const GraphContainer: React.FC<{}> = () => {
     useEffect(() => {
       if (
         graph !== null &&
-        ((selectedNode !== null && selectedNode !== previousSelectedNode) ||
+        selectedNode !== null &&
+        (selectedNode !== previousSelectedNode ||
           showSecondDegreeNeighbors !== previousSecondDegreeNeighbors)
       ) {
         // Hide all edges
@@ -273,6 +274,7 @@ const GraphContainer: React.FC<{}> = () => {
             ) || 0
         );
         setSelectedNodeEdges(graph?.edges(selectedNode) || null);
+        sigma.refresh();
       } else if (graph !== null && selectedNode === null) {
         graph?.edges().forEach((edge) => {
           graph?.setEdgeAttribute(edge, "hidden", false);
@@ -288,8 +290,8 @@ const GraphContainer: React.FC<{}> = () => {
         setSelectedNodeEdges(null);
         setInWeight(0);
         setOutWeight(0);
+        sigma.refresh();
       }
-      sigma.refresh();
     }, [selectedNode, showSecondDegreeNeighbors]);
 
     useEffect(() => {
