@@ -529,7 +529,8 @@ const SocialGraph: React.FC<{}> = () => {
             {" | "}
             {graph
               ? formatDistanceToNow(
-                  parseISO(graph?.getAttribute("lastUpdated"))
+                  parseISO(graph?.getAttribute("lastUpdated")),
+                  { addSuffix: true }
                 )
               : "loading..."}{" "}
             <img src="/update-icon.svg" className="inline-block h-4 w-4" />
