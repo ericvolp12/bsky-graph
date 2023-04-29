@@ -530,7 +530,9 @@ const SocialGraph: React.FC<{}> = () => {
           </span>
           <span className="footer-text text-xs">
             {" | "}
-            {dayjs().to(graph?.getAttribute("lastUpdated"))}{" "}
+            {graph
+              ? dayjs().to(graph?.getAttribute("lastUpdated"))
+              : "loading..."}{" "}
             <img src="/update-icon.svg" className="inline-block h-4 w-4" />
             {" | "}
             <a
