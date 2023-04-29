@@ -107,6 +107,9 @@ const DemoGraph: React.FC<{}> = () => {
   const previousSelectedNode: string | null = usePrevious<string | null>(
     selectedNode
   );
+  const previousSecondDegreeNeighbors: boolean = usePrevious<boolean>(
+    showSecondDegreeNeighbors
+  );
 
   // Graph State
   const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
@@ -173,8 +176,8 @@ const DemoGraph: React.FC<{}> = () => {
     useEffect(() => {
       if (
         graph !== null &&
-        selectedNode !== null &&
-        selectedNode !== previousSelectedNode
+        ((selectedNode !== null && selectedNode !== previousSelectedNode) ||
+          showSecondDegreeNeighbors !== previousSecondDegreeNeighbors)
       ) {
         // Hide all edges
         graph?.edges().forEach((edge) => {
@@ -295,7 +298,7 @@ const DemoGraph: React.FC<{}> = () => {
         setOutWeight(0);
       }
       sigma.refresh();
-    }, [selectedNode]);
+    }, [selectedNode, showSecondDegreeNeighbors]);
 
     useEffect(() => {
       // Register the events
