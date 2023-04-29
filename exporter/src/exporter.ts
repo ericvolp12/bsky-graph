@@ -217,6 +217,8 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   });
   log("Done truncating node position assignments");
 
+  graph.setAttribute("lastUpdated", new Date().toISOString());
+
   log("Exporting graph...");
   // Write graph to file
   fs.writeFileSync(
