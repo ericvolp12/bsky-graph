@@ -385,9 +385,16 @@ const DemoGraph: React.FC<{}> = () => {
             <div className="mt-2 max-w-xl text-sm text-gray-500">
               <p>
                 These are the top 10 moots that{" "}
-                <span className="font-bold">
+                <a
+                  className="font-bold underline-offset-1 underline"
+                  href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
+                    selectedNode,
+                    "label"
+                  )}`}
+                  target="_blank"
+                >
                   {graph?.getNodeAttribute(selectedNode, "label")}
-                </span>{" "}
+                </a>{" "}
                 has interacted with.
               </p>
             </div>
