@@ -305,10 +305,13 @@ const SocialGraph: React.FC<{}> = () => {
       registerEvents({
         clickNode: (event: any) => {
           const nodeLabel = graph?.getNodeAttribute(event.node, "label");
-          setSearchParams({
+          let newParams: { s?: string; ml?: string } = {
             s: `${nodeLabel}`,
-            ml: `${showMootList}`,
-          });
+          };
+          if (showMootList) {
+            newParams.ml = `${showMootList}`;
+          }
+          setSearchParams(newParams);
           setSelectedNode(event.node);
         },
         doubleClickNode: (event: any) => {
@@ -369,10 +372,13 @@ const SocialGraph: React.FC<{}> = () => {
                   type="button"
                   onClick={() => {
                     setShowMootList(!showMootList);
-                    setSearchParams({
+                    let newParams: { s?: string; ml?: string } = {
                       s: `${graph?.getNodeAttribute(selectedNode, "label")}`,
-                      ml: `${!showMootList}`,
-                    });
+                    };
+                    if (!showMootList) {
+                      newParams.ml = `${!showMootList}`;
+                    }
+                    setSearchParams(newParams);
                   }}
                   className={
                     `relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
