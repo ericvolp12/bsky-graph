@@ -387,8 +387,8 @@ const GraphContainer: React.FC<{}> = () => {
         const clusterLabel = document.getElementById(`cluster-${cluster.idx}`);
         // update position from the viewport
         if (clusterLabel !== null) {
-          clusterLabel.style.top = `${viewportPos.y}px`;
-          clusterLabel.style.left = `${viewportPos.x}px`;
+          clusterLabel.style.top = `${viewportPos.y.toFixed(2)}px`;
+          clusterLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
         }
       }
     };
