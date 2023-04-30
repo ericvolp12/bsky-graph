@@ -3,7 +3,6 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 import circular from "graphology-layout/circular";
 import * as fs from "fs";
 import louvain from "graphology-communities-louvain";
-import iwanthue from "iwanthue";
 
 interface Edge {
   source: string;
@@ -23,13 +22,35 @@ interface IndexNode {
 }
 
 interface Cluster {
-  label: string;
+  label?: string;
+  idx: string;
   x?: number;
   y?: number;
   color?: string;
   size: number;
+  representative?: string;
   positions: { x: number; y: number }[];
 }
+
+const clusterRepresentatives: Map<string, string> = new Map();
+
+clusterRepresentatives.set("yui.bsky.social", "Japanese Language Cluster");
+clusterRepresentatives.set("shahbazi.bsky.social", "Persian Language Cluster");
+clusterRepresentatives.set("burum.bsky.social", "Korean Language Cluster");
+clusterRepresentatives.set("livialamblet.com", "Brasil Supercluster");
+clusterRepresentatives.set("hoax.bsky.social", "Brasilian Swiftie Subcluster");
+clusterRepresentatives.set("vedat.bsky.social", "Turkish Language Minicluster");
+clusterRepresentatives.set("awhurst.bsky.social", "Artists");
+clusterRepresentatives.set("wesbos.com", "Front-end Developers");
+clusterRepresentatives.set("pfrazee.com", "BSky English Language Metacluster");
+clusterRepresentatives.set("lookitup.baby", "Queer+POC in Tech");
+clusterRepresentatives.set(
+  "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
+  "TPOT"
+);
+clusterRepresentatives.set("junlper.bsky.social", "Trans + Queer Shitposters");
+
+const filteredHandles = ["mattyglesias.bsky.social"];
 
 // log logs a message with a timestamp in human-readale format
 function log(msg: string) {
@@ -49,7 +70,12 @@ async function fetchGraph() {
   lines.forEach((line, _) => {
     const [source, sourceHandle, target, targetHandle, weight] =
       line.split(" ");
-
+    if (
+      filteredHandles.includes(sourceHandle) ||
+      filteredHandles.includes(targetHandle)
+    ) {
+      return;
+    }
     const parsedWeight = parseInt(weight);
     if (parsedWeight > 1 && source !== target) {
       const sourceNode = { did: source, handle: sourceHandle };
@@ -244,12 +270,20 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   graph.forEachNode((_, atts) => {
     if (!communityClusters[atts.community]) {
       communityClusters[atts.community] = {
-        label: atts.community,
+        idx: atts.community,
         positions: [],
         size: 1,
       };
     } else {
       communityClusters[atts.community].size++;
+    }
+    if (
+      communityClusters[atts.community].representative === undefined &&
+      clusterRepresentatives.get(atts.label) !== undefined
+    ) {
+      communityClusters[atts.community].representative = atts.label;
+      communityClusters[atts.community].label =
+        clusterRepresentatives.get(atts.label) || "";
     }
   });
 
@@ -265,6 +299,15 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       delete communityClusters[community];
     }
   }
+
+  log("Truncating node position assignments...");
+  // Reduce precision on node x and y coordinates to conserve bits in the exported graph
+  graph.updateEachNodeAttributes((_, attrs) => {
+    attrs.x = parseFloat(attrs.x.toFixed(2));
+    attrs.y = parseFloat(attrs.y.toFixed(2));
+    return attrs;
+  });
+  log("Done truncating node position assignments");
 
   graph.forEachNode((_, atts) => {
     if (!atts.community) return;
@@ -286,22 +329,17 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   graph.setAttribute("clusters", communityClusters);
 
-  log(
-    `Number of clusters: ${
-      Object.keys(communityClusters).length
-    }, number of members in each cluster: ${Object.values(communityClusters)
-      .map((c) => c.size)
-      .join(", ")} `
-  );
-
-  log("Truncating node position assignments...");
-  // Reduce precision on node x and y coordinates to conserve bits in the exported graph
-  graph.updateEachNodeAttributes((_, attrs) => {
-    attrs.x = parseFloat(attrs.x.toFixed(2));
-    attrs.y = parseFloat(attrs.y.toFixed(2));
-    return attrs;
-  });
-  log("Done truncating node position assignments");
+  log(`Number of clusters: ${Object.keys(communityClusters).length}`);
+  for (const communityIdx in communityClusters) {
+    const community = communityClusters[communityIdx];
+    log(
+      `Cluster ${
+        community.label || community.idx
+      }, size: ${community.size.toLocaleString()}, representative: ${
+        community.representative || "N/A"
+      }`
+    );
+  }
 
   graph.setAttribute("lastUpdated", new Date().toISOString());
 

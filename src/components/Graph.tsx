@@ -7,8 +7,9 @@ import {
   SigmaContainer,
   useRegisterEvents,
   useLoadGraph,
-  useSigma,
+  useSigmaContext,
 } from "@react-sigma/core";
+import { Coordinates } from "sigma/types";
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
@@ -47,13 +48,29 @@ interface MootNode {
 }
 
 interface Cluster {
-  label: string;
+  label?: string;
+  idx: string;
   x?: number;
   y?: number;
   color?: string;
   size: number;
   positions: { x: number; y: number }[];
 }
+
+const knownClusterColorMappings: Map<string, string> = new Map();
+
+knownClusterColorMappings.set("Japanese Language Cluster", "#BC002D");
+knownClusterColorMappings.set("Persian Language Cluster", "#c66b00");
+knownClusterColorMappings.set("Korean Language Cluster", "#0e448f");
+knownClusterColorMappings.set("Brasil Supercluster", "#009739");
+knownClusterColorMappings.set("Brasilian Swiftie Subcluster", "#6e1799");
+knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
+knownClusterColorMappings.set("Artists", "#eac72d");
+knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
+knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
+knownClusterColorMappings.set("Queer+POC in Tech", "#870566	");
+knownClusterColorMappings.set("TPOT", "#01aee3");
+knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
 
 function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
   const edgeMap = new Map<string, Edge>();
@@ -124,10 +141,12 @@ const GraphContainer: React.FC<{}> = () => {
   const [edgeMap, setEdgeMap] = React.useState<Map<string, Edge>>(new Map());
   const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
 
-  const SocialGraph: FC = () => {
+  const [clusters, setClusters] = React.useState<Cluster[]>([]);
+
+  const SocialGraph: React.FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
-    const sigma = useSigma();
+    const { sigma, container } = useSigmaContext();
 
     useEffect(() => {
       // Create the graph
@@ -147,15 +166,25 @@ const GraphContainer: React.FC<{}> = () => {
         if (communityClusters === null) {
           return;
         }
-        const palette = iwanthue(Object.keys(communityClusters).length, {
-          seed: "bskyCommunityClusters2",
-          colorSpace: "intense",
-          clustering: "force-vector",
-        });
+        const palette = iwanthue(
+          Object.keys(communityClusters).length -
+            Object.keys(knownClusterColorMappings).length,
+          {
+            seed: "bskyCommunityClusters3",
+            colorSpace: "intense",
+            clustering: "force-vector",
+          }
+        );
 
         // create and assign one color by cluster
         for (const community in communityClusters) {
-          communityClusters[community].color = palette.pop();
+          const cluster = communityClusters[community];
+          if (cluster.label !== undefined) {
+            cluster.color =
+              knownClusterColorMappings.get(cluster.label) ?? palette.pop();
+          } else {
+            cluster.color = palette.pop();
+          }
         }
 
         // Set the color of each node to the color of its cluster
@@ -168,6 +197,8 @@ const GraphContainer: React.FC<{}> = () => {
           }
           return attr;
         });
+
+        newGraph.setAttribute("clusters", communityClusters);
 
         setUserCount(newGraph.order);
         setEdgeCount(newGraph.size);
@@ -182,6 +213,23 @@ const GraphContainer: React.FC<{}> = () => {
           attr["old-color"] = attr.color;
         });
 
+        // Initialize cluster positions
+        const newClusters: Cluster[] = [];
+        for (const community in communityClusters) {
+          const cluster = communityClusters[community];
+          // adapt the position to viewport coordinates
+          const viewportPos = sigma.graphToViewport(cluster as Coordinates);
+          newClusters.push({
+            label: cluster.label,
+            idx: community,
+            x: viewportPos.x,
+            y: viewportPos.y,
+            color: cluster.color,
+            size: cluster.size,
+            positions: cluster.positions,
+          });
+        }
+        setClusters(newClusters);
         setGraph(newGraph);
         loadGraph(newGraph);
       }
@@ -323,6 +371,28 @@ const GraphContainer: React.FC<{}> = () => {
       }
     }, [selectedNode, showSecondDegreeNeighbors]);
 
+    // Render Cluster Labels
+    const renderClusterLabels = () => {
+      if (graph === null) {
+        return;
+      }
+      // create the clustersLabel layer
+      const communityClusters = graph.getAttribute("clusters");
+
+      // Initialize cluster positions
+      for (const community in communityClusters) {
+        const cluster = communityClusters[community];
+        // adapt the position to viewport coordinates
+        const viewportPos = sigma.graphToViewport(cluster as Coordinates);
+        const clusterLabel = document.getElementById(`cluster-${cluster.idx}`);
+        // update position from the viewport
+        if (clusterLabel !== null) {
+          clusterLabel.style.top = `${viewportPos.y}px`;
+          clusterLabel.style.left = `${viewportPos.x}px`;
+        }
+      }
+    };
+
     useEffect(() => {
       // Register the events
       registerEvents({
@@ -344,6 +414,9 @@ const GraphContainer: React.FC<{}> = () => {
             )}`,
             "_blank"
           );
+        },
+        afterRender: () => {
+          renderClusterLabels();
         },
         clickStage: (_: any) => {
           setSearchParams({});
@@ -394,7 +467,7 @@ const GraphContainer: React.FC<{}> = () => {
       }}
     >
       {selectedNode !== null && mootList.length > 0 && (
-        <div className="overflow-hidden bg-white shadow sm:rounded-md fixed left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto">
+        <div className="overflow-hidden bg-white shadow sm:rounded-md absolute left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto z-50">
           <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
             <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
               <div className="ml-4 mt-2">
@@ -470,8 +543,30 @@ const GraphContainer: React.FC<{}> = () => {
           </ul>
         </div>
       )}
+      <div className="overflow-hidden">
+        {clusters.map((cluster) => {
+          if (cluster.label !== undefined) {
+            return (
+              <div
+                key={cluster.idx}
+                id={`cluster-${cluster.idx}`}
+                className="clusterLabel absolute md:text-3xl text-xl"
+                style={{
+                  color: `${cluster.color}`,
+                  top: `${cluster.y}px`,
+                  left: `${cluster.x}px`,
+                  zIndex: 3,
+                }}
+              >
+                {cluster.label}
+              </div>
+            );
+          }
+        })}
+      </div>
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
+
+      <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -549,7 +644,7 @@ const GraphContainer: React.FC<{}> = () => {
           </div>
         </div>
       </div>
-      <footer className="bg-white fixed bottom-0 text-center w-full">
+      <footer className="bg-white absolute bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
             Built by{" "}
