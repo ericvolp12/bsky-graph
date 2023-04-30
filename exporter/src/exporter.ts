@@ -43,7 +43,7 @@ clusterRepresentatives.set("vedat.bsky.social", "Turkish Language Minicluster");
 clusterRepresentatives.set("awhurst.bsky.social", "Artists");
 clusterRepresentatives.set("wesbos.com", "Front-end Developers");
 clusterRepresentatives.set("pfrazee.com", "BSky English Language Metacluster");
-clusterRepresentatives.set("lookitup.baby", "Queer+POC in Tech");
+clusterRepresentatives.set("lookitup.baby", "Goose Metacluster");
 clusterRepresentatives.set(
   "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
   "TPOT"
