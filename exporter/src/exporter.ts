@@ -319,12 +319,22 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   // calculate the cluster's nodes barycenter to use this as cluster label position
   for (const community in communityClusters) {
-    communityClusters[community].x =
-      communityClusters[community].positions.reduce((acc, p) => acc + p.x, 0) /
-      communityClusters[community].positions.length;
-    communityClusters[community].y =
-      communityClusters[community].positions.reduce((acc, p) => acc + p.y, 0) /
-      communityClusters[community].positions.length;
+    communityClusters[community].x = parseFloat(
+      (
+        communityClusters[community].positions.reduce(
+          (acc, p) => acc + p.x,
+          0
+        ) / communityClusters[community].positions.length
+      ).toFixed(2)
+    );
+    communityClusters[community].y = parseFloat(
+      (
+        communityClusters[community].positions.reduce(
+          (acc, p) => acc + p.y,
+          0
+        ) / communityClusters[community].positions.length
+      ).toFixed(2)
+    );
   }
 
   graph.setAttribute("clusters", communityClusters);

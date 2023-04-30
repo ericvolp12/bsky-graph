@@ -553,8 +553,8 @@ const GraphContainer: React.FC<{}> = () => {
                 className="clusterLabel absolute md:text-3xl text-xl"
                 style={{
                   color: `${cluster.color}`,
-                  top: `${cluster.y}px`,
-                  left: `${cluster.x}px`,
+                  top: `${cluster.y?.toFixed(2)}px`,
+                  left: `${cluster.x?.toFixed(2)}px`,
                   zIndex: 3,
                 }}
               >
