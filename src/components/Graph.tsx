@@ -142,6 +142,8 @@ const GraphContainer: React.FC<{}> = () => {
   const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
 
   const [clusters, setClusters] = React.useState<Cluster[]>([]);
+  const [showClusterLabels, setShowClusterLabels] =
+    React.useState<boolean>(true);
 
   const SocialGraph: React.FC = () => {
     const loadGraph = useLoadGraph();
@@ -551,6 +553,7 @@ const GraphContainer: React.FC<{}> = () => {
               <div
                 key={cluster.idx}
                 id={`cluster-${cluster.idx}`}
+                hidden={!showClusterLabels}
                 className="clusterLabel absolute md:text-3xl text-xl"
                 style={{
                   color: `${cluster.color}`,
@@ -604,8 +607,8 @@ const GraphContainer: React.FC<{}> = () => {
               </dd>
             </div>
           </dl>
-          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3">
-            <div className="col-span-2">
+          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
+            <div className="col-span-2 mt-auto mb-auto ">
               <CustomSearch
                 onLocate={(node) => {
                   const nodeLabel = graph?.getNodeAttribute(node, "label");
@@ -619,27 +622,49 @@ const GraphContainer: React.FC<{}> = () => {
                 }}
               />
             </div>
-            <div className="relative flex gap-x-3 ml-4 mt-auto mb-auto w-full">
-              <div className="flex h-6 items-center">
-                <input
-                  id="neighbors"
-                  name="neighbors"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  checked={showSecondDegreeNeighbors}
-                  onChange={() =>
-                    setShowSecondDegreeNeighbors(!showSecondDegreeNeighbors)
-                  }
-                />
+            <div className="relative flex gap-x-3 ml-4 w-full flex-col">
+              <div className="flex flex-row">
+                <div className="flex h-6 items-center mt-auto mb-auto">
+                  <input
+                    id="neighbors"
+                    name="neighbors"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    checked={showSecondDegreeNeighbors}
+                    onChange={() =>
+                      setShowSecondDegreeNeighbors(!showSecondDegreeNeighbors)
+                    }
+                  />
+                </div>
+                <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
+                  <label
+                    htmlFor="neighbors"
+                    className="font-medium text-gray-900"
+                  >
+                    2°<span className="hidden md:inline"> Neighbors</span>
+                    <span className="md:hidden">Neigh...</span>
+                  </label>
+                </div>
               </div>
-              <div className="md:text-sm text-xs leading-6">
-                <label
-                  htmlFor="neighbors"
-                  className="font-medium text-gray-900"
-                >
-                  2°<span className="hidden md:inline"> Neighbors</span>
-                  <span className="md:hidden">Neigh...</span>
-                </label>
+              <div className="flex flex-row">
+                <div className="flex h-6 items-center">
+                  <input
+                    id="clusterLabels"
+                    name="clusterLabels"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    checked={showClusterLabels}
+                    onChange={() => setShowClusterLabels(!showClusterLabels)}
+                  />
+                </div>
+                <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
+                  <label
+                    htmlFor="clusterLabels"
+                    className="font-medium text-gray-900"
+                  >
+                    <span className="hidden md:inline">Cluster </span>Labels
+                  </label>
+                </div>
               </div>
             </div>
           </div>
