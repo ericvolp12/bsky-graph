@@ -12,8 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "graphology": "^0.25.1",
+    "graphology-communities-louvain": "^2.0.1",
     "graphology-layout": "^0.6.1",
     "graphology-layout-forceatlas2": "^0.10.1",
+    "iwanthue": "^2.0.0",
     "ts-node": "^10.9.1",
     "tsc": "^2.0.4",
     "typescript": "^5.0.4"

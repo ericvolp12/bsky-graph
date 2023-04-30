@@ -95,9 +95,9 @@ const GraphContainer: React.FC<{}> = () => {
 
   // Selected Node properties
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
-  const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(0);
-  const [inWeight, setInWeight] = React.useState<number>(0);
-  const [outWeight, setOutWeight] = React.useState<number>(0);
+  const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(-1);
+  const [inWeight, setInWeight] = React.useState<number>(-1);
+  const [outWeight, setOutWeight] = React.useState<number>(-1);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
     string[] | null
   >(null);
@@ -185,6 +185,7 @@ const GraphContainer: React.FC<{}> = () => {
           if (showSecondDegreeNeighbors) {
             graph?.setNodeAttribute(node, "hidden", true);
           } else {
+            graph?.setNodeAttribute(node, "hidden", false);
             graph?.setNodeAttribute(node, "color", "rgba(0,0,0,0.1)");
           }
         });
@@ -286,10 +287,10 @@ const GraphContainer: React.FC<{}> = () => {
           graph?.setNodeAttribute(node, "highlighted", false);
           graph?.setNodeAttribute(node, "hidden", false);
         });
-        setSelectedNodeCount(0);
+        setSelectedNodeCount(-1);
         setSelectedNodeEdges(null);
-        setInWeight(0);
-        setOutWeight(0);
+        setInWeight(-1);
+        setOutWeight(-1);
         sigma.refresh();
       }
     }, [selectedNode, showSecondDegreeNeighbors]);
@@ -401,7 +402,7 @@ const GraphContainer: React.FC<{}> = () => {
               <p>
                 These are the top 10 moots that{" "}
                 <a
-                  className="font-bold underline-offset-1 underline"
+                  className="font-bold underline-offset-1 underline break-all"
                   href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
                     selectedNode,
                     "label"
@@ -451,7 +452,7 @@ const GraphContainer: React.FC<{}> = () => {
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
               <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeCount > 0
+                {selectedNodeCount >= 0
                   ? selectedNodeCount.toLocaleString()
                   : userCount.toLocaleString()}
               </dd>
@@ -473,7 +474,7 @@ const GraphContainer: React.FC<{}> = () => {
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
               <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {inWeight > 0 && outWeight > 0
+                {inWeight >= 0 && outWeight >= 0
                   ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
                   : totalWeight.toLocaleString()}
               </dd>

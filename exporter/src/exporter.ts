@@ -2,6 +2,8 @@ import { MultiDirectedGraph } from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import circular from "graphology-layout/circular";
 import * as fs from "fs";
+import louvain from "graphology-communities-louvain";
+import iwanthue from "iwanthue";
 
 interface Edge {
   source: string;
@@ -18,6 +20,15 @@ interface IndexNode {
   key: number;
   did: string;
   label: string;
+}
+
+interface Cluster {
+  label: string;
+  x?: number;
+  y?: number;
+  color?: string;
+  size: number;
+  positions: { x: number; y: number }[];
 }
 
 // log logs a message with a timestamp in human-readale format
@@ -39,24 +50,36 @@ async function fetchGraph() {
     const [source, sourceHandle, target, targetHandle, weight] =
       line.split(" ");
 
-    const sourceNode = { did: source, handle: sourceHandle };
-    if (!nodesMap.has(source)) {
-      nodesMap.set(source, sourceNode);
-    }
+    const parsedWeight = parseInt(weight);
+    if (parsedWeight > 1 && source !== target) {
+      const sourceNode = { did: source, handle: sourceHandle };
+      if (!nodesMap.has(source)) {
+        nodesMap.set(source, sourceNode);
+      }
 
-    const targetNode = { did: target, handle: targetHandle };
-    if (!nodesMap.has(target)) {
-      nodesMap.set(target, targetNode);
-    }
+      const targetNode = { did: target, handle: targetHandle };
+      if (!nodesMap.has(target)) {
+        nodesMap.set(target, targetNode);
+      }
 
-    edges.push({
-      source,
-      target,
-      weight: parseInt(weight),
-    });
+      edges.push({
+        source,
+        target,
+        weight: parsedWeight,
+      });
+    }
   });
 
-  const nodes: Node[] = Array.from(nodesMap.values());
+  // Sort the nodes by did so that the order is consistent
+  const nodes: Node[] = Array.from(nodesMap.values()).sort((a, b) => {
+    if (a.did < b.did) {
+      return -1;
+    } else if (a.did > b.did) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
   log("Done parsing graph response");
   return { edges, nodes };
 }
@@ -203,17 +226,90 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning layout...");
   circular.assign(graph);
   const settings = forceAtlas2.inferSettings(graph);
-  log("Running Force Atlas...");
-  forceAtlas2.assign(graph, { settings, iterations: 600 });
+  const iterationCount = 600;
+  log(`Running ${iterationCount} Force Atlas simulations...`);
+  forceAtlas2.assign(graph, { settings, iterations: iterationCount });
   log("Done running Force Atlas");
+
+  log("Assigning community partitions...");
+  // To directly assign communities as a node attribute
+  louvain.assign(graph);
+  log("Done assigning community partitions");
+
+  // initialize clusters from graph data
+  const communityClusters: { [key: string]: Cluster } = {};
+
+  graph.forEachNode((_, atts) => {
+    if (!communityClusters[atts.community]) {
+      communityClusters[atts.community] = {
+        label: atts.community,
+        positions: [],
+        size: 1,
+      };
+    } else {
+      communityClusters[atts.community].size++;
+    }
+  });
+
+  // Drop any clusters with fewer than 20 members, remove the cluster assignment from any nodes in those clusters
+  for (const community in communityClusters) {
+    if (communityClusters[community].size < 20) {
+      graph.updateEachNodeAttributes((_, atts) => {
+        if (atts.community === community) {
+          delete atts.community;
+        }
+        return atts;
+      });
+      delete communityClusters[community];
+    }
+  }
+
+  log(
+    `Number of clusters: ${
+      Object.keys(communityClusters).length
+    }, number of members in each cluster: ${Object.values(communityClusters)
+      .map((c) => c.size)
+      .join(", ")} `
+  );
+
+  const palette = iwanthue(Object.keys(communityClusters).length, {
+    seed: "bskyCommunities",
+    colorSpace: "intense",
+    clustering: "force-vector",
+  });
+
+  // create and assign one color by cluster
+  for (const community in communityClusters) {
+    communityClusters[community].color = palette.pop();
+  }
+
+  // change node appearance
+  graph.forEachNode((_, atts) => {
+    if (!atts.community) return;
+    const cluster = communityClusters[atts.community];
+    // node color depends on the cluster it belongs to
+    if (cluster === undefined) return;
+    atts.color = cluster.color;
+    // store cluster's nodes positions to calculate cluster label position
+    cluster.positions.push({ x: atts.x, y: atts.y });
+  });
+
+  // calculate the cluster's nodes barycenter to use this as cluster label position
+  for (const community in communityClusters) {
+    communityClusters[community].x =
+      communityClusters[community].positions.reduce((acc, p) => acc + p.x, 0) /
+      communityClusters[community].positions.length;
+    communityClusters[community].y =
+      communityClusters[community].positions.reduce((acc, p) => acc + p.y, 0) /
+      communityClusters[community].positions.length;
+  }
 
   log("Truncating node position assignments...");
   // Reduce precision on node x and y coordinates to conserve bits in the exported graph
-  graph.forEachNode((node) => {
-    const x = graph.getNodeAttribute(node, "x");
-    const y = graph.getNodeAttribute(node, "y");
-    graph.setNodeAttribute(node, "x", parseFloat(x.toFixed(2)));
-    graph.setNodeAttribute(node, "y", parseFloat(y.toFixed(2)));
+  graph.updateEachNodeAttributes((_, attrs) => {
+    attrs.x = parseFloat(attrs.x.toFixed(2));
+    attrs.y = parseFloat(attrs.y.toFixed(2));
+    return attrs;
   });
   log("Done truncating node position assignments");
 
