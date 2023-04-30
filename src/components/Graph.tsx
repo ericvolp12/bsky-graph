@@ -222,8 +222,8 @@ const GraphContainer: React.FC<{}> = () => {
           newClusters.push({
             label: cluster.label,
             idx: community,
-            x: viewportPos.x,
-            y: viewportPos.y,
+            x: viewportPos.x.toFixed(2),
+            y: viewportPos.y.toFixed(2),
             color: cluster.color,
             size: cluster.size,
             positions: cluster.positions,
