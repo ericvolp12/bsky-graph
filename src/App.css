@@ -1,0 +1,34 @@
+.clusterLabel {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: sans-serif;
+  font-variant: small-caps;
+
+  text-shadow: 2px 2px 1px white, -2px -2px 1px white, -2px 2px 1px white,
+    2px -2px 1px white;
+}
+
+.sigma-hovers{
+    z-index: 4;
+}
+.sigma-mouse{
+    z-index: 4;
+}
+.sigma-hoverNodes{
+    z-index: 4;
+}
+.sigma-hoverLabels{
+    z-index: 4;
+}
+.sigma-labels{
+    z-index: 2;
+}
+.sigma-edges{
+    z-index: 1;
+}
+.sigma-edgeLabels{
+    z-index: 1;
+}
+.sigma-nodes {
+  z-index: 1;
+}

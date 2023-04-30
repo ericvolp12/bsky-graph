@@ -2,6 +2,7 @@ import { MultiDirectedGraph } from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import circular from "graphology-layout/circular";
 import * as fs from "fs";
+import louvain from "graphology-communities-louvain";
 
 interface Edge {
   source: string;
@@ -19,6 +20,37 @@ interface IndexNode {
   did: string;
   label: string;
 }
+
+interface Cluster {
+  label?: string;
+  idx: string;
+  x?: number;
+  y?: number;
+  color?: string;
+  size: number;
+  representative?: string;
+  positions: { x: number; y: number }[];
+}
+
+const clusterRepresentatives: Map<string, string> = new Map();
+
+clusterRepresentatives.set("yui.bsky.social", "Japanese Language Cluster");
+clusterRepresentatives.set("shahbazi.bsky.social", "Persian Language Cluster");
+clusterRepresentatives.set("burum.bsky.social", "Korean Language Cluster");
+clusterRepresentatives.set("livialamblet.com", "Brasil Supercluster");
+clusterRepresentatives.set("hoax.bsky.social", "Brasilian Swiftie Subcluster");
+clusterRepresentatives.set("vedat.bsky.social", "Turkish Language Minicluster");
+clusterRepresentatives.set("awhurst.bsky.social", "Artists");
+clusterRepresentatives.set("wesbos.com", "Front-end Developers");
+clusterRepresentatives.set("pfrazee.com", "BSky English Language Metacluster");
+clusterRepresentatives.set("lookitup.baby", "Queer+POC in Tech");
+clusterRepresentatives.set(
+  "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
+  "TPOT"
+);
+clusterRepresentatives.set("junlper.bsky.social", "Trans + Queer Shitposters");
+
+const filteredHandles = ["mattyglesias.bsky.social"];
 
 // log logs a message with a timestamp in human-readale format
 function log(msg: string) {
@@ -38,25 +70,42 @@ async function fetchGraph() {
   lines.forEach((line, _) => {
     const [source, sourceHandle, target, targetHandle, weight] =
       line.split(" ");
-
-    const sourceNode = { did: source, handle: sourceHandle };
-    if (!nodesMap.has(source)) {
-      nodesMap.set(source, sourceNode);
+    if (
+      filteredHandles.includes(sourceHandle) ||
+      filteredHandles.includes(targetHandle)
+    ) {
+      return;
     }
+    const parsedWeight = parseInt(weight);
+    if (parsedWeight > 1 && source !== target) {
+      const sourceNode = { did: source, handle: sourceHandle };
+      if (!nodesMap.has(source)) {
+        nodesMap.set(source, sourceNode);
+      }
 
-    const targetNode = { did: target, handle: targetHandle };
-    if (!nodesMap.has(target)) {
-      nodesMap.set(target, targetNode);
+      const targetNode = { did: target, handle: targetHandle };
+      if (!nodesMap.has(target)) {
+        nodesMap.set(target, targetNode);
+      }
+
+      edges.push({
+        source,
+        target,
+        weight: parsedWeight,
+      });
     }
-
-    edges.push({
-      source,
-      target,
-      weight: parseInt(weight),
-    });
   });
 
-  const nodes: Node[] = Array.from(nodesMap.values());
+  // Sort the nodes by did so that the order is consistent
+  const nodes: Node[] = Array.from(nodesMap.values()).sort((a, b) => {
+    if (a.did < b.did) {
+      return -1;
+    } else if (a.did > b.did) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
   log("Done parsing graph response");
   return { edges, nodes };
 }
@@ -203,19 +252,104 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning layout...");
   circular.assign(graph);
   const settings = forceAtlas2.inferSettings(graph);
-  log("Running Force Atlas...");
-  forceAtlas2.assign(graph, { settings, iterations: 600 });
+  const iterationCount = 600;
+  log(`Running ${iterationCount} Force Atlas simulations...`);
+  forceAtlas2.assign(graph, { settings, iterations: iterationCount });
   log("Done running Force Atlas");
+
+  log("Assigning community partitions...");
+  // To directly assign communities as a node attribute
+  louvain.assign(graph, {
+    resolution: 1,
+  });
+  log("Done assigning community partitions");
+
+  // initialize clusters from graph data
+  const communityClusters: { [key: string]: Cluster } = {};
+
+  graph.forEachNode((_, atts) => {
+    if (!communityClusters[atts.community]) {
+      communityClusters[atts.community] = {
+        idx: atts.community,
+        positions: [],
+        size: 1,
+      };
+    } else {
+      communityClusters[atts.community].size++;
+    }
+    if (
+      communityClusters[atts.community].representative === undefined &&
+      clusterRepresentatives.get(atts.label) !== undefined
+    ) {
+      communityClusters[atts.community].representative = atts.label;
+      communityClusters[atts.community].label =
+        clusterRepresentatives.get(atts.label) || "";
+    }
+  });
+
+  // Drop any clusters with fewer than 50 members, remove the cluster assignment from any nodes in those clusters
+  for (const community in communityClusters) {
+    if (communityClusters[community].size < 50) {
+      graph.updateEachNodeAttributes((_, atts) => {
+        if (atts.community === community) {
+          delete atts.community;
+        }
+        return atts;
+      });
+      delete communityClusters[community];
+    }
+  }
 
   log("Truncating node position assignments...");
   // Reduce precision on node x and y coordinates to conserve bits in the exported graph
-  graph.forEachNode((node) => {
-    const x = graph.getNodeAttribute(node, "x");
-    const y = graph.getNodeAttribute(node, "y");
-    graph.setNodeAttribute(node, "x", parseFloat(x.toFixed(2)));
-    graph.setNodeAttribute(node, "y", parseFloat(y.toFixed(2)));
+  graph.updateEachNodeAttributes((_, attrs) => {
+    attrs.x = parseFloat(attrs.x.toFixed(2));
+    attrs.y = parseFloat(attrs.y.toFixed(2));
+    return attrs;
   });
   log("Done truncating node position assignments");
+
+  graph.forEachNode((_, atts) => {
+    if (!atts.community) return;
+    const cluster = communityClusters[atts.community];
+    if (cluster === undefined) return;
+    // store cluster's nodes positions to calculate cluster label position
+    cluster.positions.push({ x: atts.x, y: atts.y });
+  });
+
+  // calculate the cluster's nodes barycenter to use this as cluster label position
+  for (const community in communityClusters) {
+    communityClusters[community].x = parseFloat(
+      (
+        communityClusters[community].positions.reduce(
+          (acc, p) => acc + p.x,
+          0
+        ) / communityClusters[community].positions.length
+      ).toFixed(2)
+    );
+    communityClusters[community].y = parseFloat(
+      (
+        communityClusters[community].positions.reduce(
+          (acc, p) => acc + p.y,
+          0
+        ) / communityClusters[community].positions.length
+      ).toFixed(2)
+    );
+  }
+
+  graph.setAttribute("clusters", communityClusters);
+
+  log(`Number of clusters: ${Object.keys(communityClusters).length}`);
+  for (const communityIdx in communityClusters) {
+    const community = communityClusters[communityIdx];
+    log(
+      `Cluster ${
+        community.label || community.idx
+      }, size: ${community.size.toLocaleString()}, representative: ${
+        community.representative || "N/A"
+      }`
+    );
+  }
 
   graph.setAttribute("lastUpdated", new Date().toISOString());
 

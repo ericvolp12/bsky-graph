@@ -7,11 +7,13 @@ import {
   SigmaContainer,
   useRegisterEvents,
   useLoadGraph,
-  useSigma,
+  useSigmaContext,
 } from "@react-sigma/core";
+import { Coordinates } from "sigma/types";
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
+import iwanthue from "iwanthue";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -45,19 +47,40 @@ interface MootNode {
   weight: number;
 }
 
+interface Cluster {
+  label?: string;
+  idx: string;
+  x?: number;
+  y?: number;
+  color?: string;
+  size: number;
+  positions: { x: number; y: number }[];
+}
+
+const knownClusterColorMappings: Map<string, string> = new Map();
+
+knownClusterColorMappings.set("Japanese Language Cluster", "#BC002D");
+knownClusterColorMappings.set("Persian Language Cluster", "#c66b00");
+knownClusterColorMappings.set("Korean Language Cluster", "#0e448f");
+knownClusterColorMappings.set("Brasil Supercluster", "#009739");
+knownClusterColorMappings.set("Brasilian Swiftie Subcluster", "#6e1799");
+knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
+knownClusterColorMappings.set("Artists", "#eac72d");
+knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
+knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
+knownClusterColorMappings.set("Queer+POC in Tech", "#870566	");
+knownClusterColorMappings.set("TPOT", "#01aee3");
+knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
+
 function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
   const edgeMap = new Map<string, Edge>();
-  graph?.edges().forEach((edge) => {
-    const source = graph?.source(edge);
-    const target = graph?.target(edge);
-    const weight = graph?.getEdgeAttribute(edge, "weight");
-    const ogWeight = graph?.getEdgeAttribute(edge, "ogWeight");
-    if (source !== undefined && target !== undefined && weight !== null) {
+  graph?.forEachEdge((edge, attrs, source, target) => {
+    if (source !== undefined && target !== undefined && attrs.weight !== null) {
       edgeMap.set(edge, {
         source: source,
         target: target,
-        weight: weight,
-        ogWeight: ogWeight,
+        weight: attrs.weight,
+        ogWeight: attrs.ogWeight,
       });
     }
   });
@@ -66,17 +89,12 @@ function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
 
 function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   const nodeMap = new Map<string, Node>();
-  graph?.nodes().forEach((node) => {
-    const key = graph?.getNodeAttribute(node, "key");
-    const size = graph?.getNodeAttribute(node, "size");
-    const label = graph?.getNodeAttribute(node, "label");
-    if (key !== undefined && size !== undefined && label !== undefined) {
-      nodeMap.set(label, {
-        key: key,
-        size: size,
-        label: label,
-      });
-    }
+  graph?.forEachNode((_, attrs) => {
+    nodeMap.set(attrs.label, {
+      key: attrs.key,
+      size: attrs.size,
+      label: attrs.label,
+    });
   });
   return nodeMap;
 }
@@ -95,9 +113,9 @@ const GraphContainer: React.FC<{}> = () => {
 
   // Selected Node properties
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
-  const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(0);
-  const [inWeight, setInWeight] = React.useState<number>(0);
-  const [outWeight, setOutWeight] = React.useState<number>(0);
+  const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(-1);
+  const [inWeight, setInWeight] = React.useState<number>(-1);
+  const [outWeight, setOutWeight] = React.useState<number>(-1);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
     string[] | null
   >(null);
@@ -123,10 +141,12 @@ const GraphContainer: React.FC<{}> = () => {
   const [edgeMap, setEdgeMap] = React.useState<Map<string, Edge>>(new Map());
   const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
 
-  const SocialGraph: FC = () => {
+  const [clusters, setClusters] = React.useState<Cluster[]>([]);
+
+  const SocialGraph: React.FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
-    const sigma = useSigma();
+    const { sigma, container } = useSigmaContext();
 
     useEffect(() => {
       // Create the graph
@@ -141,28 +161,101 @@ const GraphContainer: React.FC<{}> = () => {
         setEdgeMap(newEdgeMap);
         setNodeMap(newNodeMap);
 
-        setUserCount(newGraph.nodes().length);
-        setEdgeCount(newGraph.edges().length);
-        setTotalWeight(
-          newGraph
-            .edges()
-            .reduce(
-              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            )
+        const communityClusters = newGraph.getAttribute("clusters");
+
+        if (communityClusters === null) {
+          return;
+        }
+        const palette = iwanthue(
+          Object.keys(communityClusters).length -
+            Object.keys(knownClusterColorMappings).length,
+          {
+            seed: "bskyCommunityClusters3",
+            colorSpace: "intense",
+            clustering: "force-vector",
+          }
         );
-        newGraph?.nodes().forEach((node) => {
-          newGraph?.setNodeAttribute(
-            node,
-            "old-color",
-            newGraph.getNodeAttribute(node, "color")
-          );
+
+        // create and assign one color by cluster
+        for (const community in communityClusters) {
+          const cluster = communityClusters[community];
+          if (cluster.label !== undefined) {
+            cluster.color =
+              knownClusterColorMappings.get(cluster.label) ?? palette.pop();
+          } else {
+            cluster.color = palette.pop();
+          }
+        }
+
+        // Set the color of each node to the color of its cluster
+        newGraph?.updateEachNodeAttributes((_, attr) => {
+          if (
+            attr.community !== undefined &&
+            attr.community in communityClusters
+          ) {
+            attr.color = communityClusters[attr.community].color;
+          }
+          return attr;
         });
 
+        newGraph.setAttribute("clusters", communityClusters);
+
+        setUserCount(newGraph.order);
+        setEdgeCount(newGraph.size);
+        setTotalWeight(
+          newGraph.reduceEdges(
+            (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          )
+        );
+
+        newGraph?.forEachNode((_, attr) => {
+          attr["old-color"] = attr.color;
+        });
+
+        // Initialize cluster positions
+        const newClusters: Cluster[] = [];
+        for (const community in communityClusters) {
+          const cluster = communityClusters[community];
+          // adapt the position to viewport coordinates
+          const viewportPos = sigma.graphToViewport(cluster as Coordinates);
+          newClusters.push({
+            label: cluster.label,
+            idx: community,
+            x: viewportPos.x,
+            y: viewportPos.y,
+            color: cluster.color,
+            size: cluster.size,
+            positions: cluster.positions,
+          });
+        }
+        setClusters(newClusters);
         setGraph(newGraph);
         loadGraph(newGraph);
       }
     }, [loadGraph]);
+
+    // Render Cluster Labels
+    const renderClusterLabels = () => {
+      if (graph === null) {
+        return;
+      }
+      // create the clustersLabel layer
+      const communityClusters = graph.getAttribute("clusters");
+
+      // Initialize cluster positions
+      for (const community in communityClusters) {
+        const cluster = communityClusters[community];
+        // adapt the position to viewport coordinates
+        const viewportPos = sigma.graphToViewport(cluster as Coordinates);
+        const clusterLabel = document.getElementById(`cluster-${cluster.idx}`);
+        // update position from the viewport
+        if (clusterLabel !== null) {
+          clusterLabel.style.top = `${viewportPos.y.toFixed(2)}px`;
+          clusterLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
+        }
+      }
+    };
 
     // Select Node Effect
     useEffect(() => {
@@ -180,98 +273,104 @@ const GraphContainer: React.FC<{}> = () => {
         });
 
         // Hide or fade all nodes
-        graph?.nodes().forEach((node) => {
-          graph?.setNodeAttribute(node, "highlighted", false);
+        graph?.updateEachNodeAttributes((_, attrs) => {
+          attrs.highlighted = false;
           if (showSecondDegreeNeighbors) {
-            graph?.setNodeAttribute(node, "hidden", true);
+            attrs.hidden = true;
           } else {
-            graph?.setNodeAttribute(node, "color", "rgba(0,0,0,0.1)");
+            attrs.hidden = false;
+            attrs.color = "rgba(0,0,0,0.1)";
           }
+          return attrs;
         });
 
         // Get all neighbors of selected node
         const neighbors = graph?.neighbors(selectedNode);
 
         // Build the MootList, an ordered list of neighbors by weight
-        const mootList: MootNode[] = [];
-        neighbors?.forEach((neighbor) => {
-          if (neighbor !== selectedNode) {
-            const weight = graph?.getEdgeAttribute(
-              graph?.edges(selectedNode, neighbor)[0],
-              "weight"
-            );
-            if (weight !== undefined) {
-              mootList.push({
-                node: neighbor,
+        const mootList = graph?.reduceEdges<MootNode[]>(
+          selectedNode,
+          (acc, _, edgeAttrs, source, target, sourceAttrs, targetAttrs) => {
+            const weight = edgeAttrs.weight;
+            const existingMootEntry = acc.find((entry) => {
+              return (
+                entry.node.toString() === target.toString() ||
+                entry.node.toString() === source.toString()
+              );
+            });
+            if (existingMootEntry === undefined && source !== target) {
+              const key =
+                source === selectedNode ? targetAttrs.key : sourceAttrs.key;
+              const label =
+                source === selectedNode ? targetAttrs.label : sourceAttrs.label;
+              acc.push({
+                node: key,
                 weight: weight,
-                label: graph.getNodeAttribute(neighbor, "label"),
+                label: label,
               });
             }
-          }
-        });
+            return acc;
+          },
+          []
+        );
+
         mootList.sort((a, b) => b.weight - a.weight);
 
         setMootList(mootList);
 
         // Re-color all nodes connected to selected node
-        graph?.neighbors(selectedNode).forEach((node) => {
-          const oldColor = graph.getNodeAttribute(node, "old-color");
-          graph?.setNodeAttribute(node, "hidden", false);
-          graph?.setNodeAttribute(node, "color", oldColor);
+        graph?.forEachNeighbor(selectedNode, (node, attrs) => {
+          attrs.hidden = false;
+          attrs.color = attrs["old-color"];
           // Set all 2nd degree neighbors to a light grey
           if (showSecondDegreeNeighbors) {
-            graph?.neighbors(node).forEach((neighbor) => {
+            graph?.forEachNeighbor(node, (neighbor, neighborAttrs) => {
               if (!neighbors?.includes(neighbor)) {
-                graph?.setNodeAttribute(neighbor, "hidden", false);
-                graph?.setNodeAttribute(neighbor, "color", "rgba(0,0,0,0.1)");
+                neighborAttrs.hidden = false;
+                neighborAttrs.color = "rgba(0,0,0,0.1)";
               }
               // Show 2nd degree neighbor edges
-              graph?.edges(node, neighbor).forEach((edge) => {
-                graph?.setEdgeAttribute(edge, "hidden", false);
+              graph?.forEachEdge(node, neighbor, (_, attrs) => {
+                attrs.hidden = false;
               });
             });
           }
         });
 
         // Re-show edges connected to selected node
-        graph?.inEdges(selectedNode).forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
-          // Make in-edges a soft sky-blue
-          graph?.setEdgeAttribute(edge, "color", "#4b33ff");
+        graph?.forEachInEdge(selectedNode, (_, attrs) => {
+          attrs.hidden = false;
+          attrs.color = "#4b33ff";
         });
 
-        graph?.outEdges(selectedNode).forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
-          // Make out a burnt orange
-          graph?.setEdgeAttribute(edge, "color", "#ff5254");
+        graph?.forEachOutEdge(selectedNode, (_, attrs) => {
+          attrs.hidden = false;
+          attrs.color = "#ff5254";
         });
 
         // Re-color selected node and highlight it
-        graph.setNodeAttribute(
-          selectedNode,
-          "color",
-          graph.getNodeAttribute(selectedNode, "old-color")
-        );
-        graph.setNodeAttribute(selectedNode, "highlighted", true);
-        graph.setNodeAttribute(selectedNode, "hidden", false);
+        graph?.updateNodeAttributes(selectedNode, (attrs) => {
+          attrs.color = attrs["old-color"];
+          attrs.highlighted = true;
+          attrs.hidden = false;
+          return attrs;
+        });
 
         // Update selected node count and weight for display
-        setSelectedNodeCount(graph?.neighbors(selectedNode).length || 0);
+        setSelectedNodeCount(graph?.degree(selectedNode) || 0);
         setInWeight(
-          graph
-            ?.inEdges(selectedNode)
-            .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            ) || 0
+          graph?.reduceInEdges(
+            selectedNode,
+            (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          ) || 0
         );
         setOutWeight(
-          graph
-            ?.outEdges(selectedNode)
-            .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            ) || 0
+          graph?.reduceOutEdges(
+            selectedNode,
+            (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          ) || 0
         );
         setSelectedNodeEdges(graph?.edges(selectedNode) || null);
         sigma.refresh();
@@ -286,15 +385,16 @@ const GraphContainer: React.FC<{}> = () => {
           graph?.setNodeAttribute(node, "highlighted", false);
           graph?.setNodeAttribute(node, "hidden", false);
         });
-        setSelectedNodeCount(0);
+        setSelectedNodeCount(-1);
         setSelectedNodeEdges(null);
-        setInWeight(0);
-        setOutWeight(0);
+        setInWeight(-1);
+        setOutWeight(-1);
         sigma.refresh();
       }
     }, [selectedNode, showSecondDegreeNeighbors]);
 
     useEffect(() => {
+      renderClusterLabels();
       // Register the events
       registerEvents({
         clickNode: (event: any) => {
@@ -315,6 +415,9 @@ const GraphContainer: React.FC<{}> = () => {
             )}`,
             "_blank"
           );
+        },
+        afterRender: () => {
+          renderClusterLabels();
         },
         clickStage: (_: any) => {
           setSearchParams({});
@@ -365,7 +468,7 @@ const GraphContainer: React.FC<{}> = () => {
       }}
     >
       {selectedNode !== null && mootList.length > 0 && (
-        <div className="overflow-hidden bg-white shadow sm:rounded-md fixed left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto">
+        <div className="overflow-hidden bg-white shadow sm:rounded-md absolute left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto z-50">
           <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
             <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
               <div className="ml-4 mt-2">
@@ -401,7 +504,7 @@ const GraphContainer: React.FC<{}> = () => {
               <p>
                 These are the top 10 moots that{" "}
                 <a
-                  className="font-bold underline-offset-1 underline"
+                  className="font-bold underline-offset-1 underline break-all"
                   href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
                     selectedNode,
                     "label"
@@ -441,8 +544,30 @@ const GraphContainer: React.FC<{}> = () => {
           </ul>
         </div>
       )}
+      <div className="overflow-hidden">
+        {clusters.map((cluster) => {
+          if (cluster.label !== undefined) {
+            return (
+              <div
+                key={cluster.idx}
+                id={`cluster-${cluster.idx}`}
+                className="clusterLabel absolute md:text-3xl text-xl"
+                style={{
+                  color: `${cluster.color}`,
+                  top: `${cluster.y}px`,
+                  left: `${cluster.x}px`,
+                  zIndex: 3,
+                }}
+              >
+                {cluster.label}
+              </div>
+            );
+          }
+        })}
+      </div>
       <SocialGraph />
-      <div className="fixed left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit">
+
+      <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -451,7 +576,7 @@ const GraphContainer: React.FC<{}> = () => {
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
               <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeCount > 0
+                {selectedNodeCount >= 0
                   ? selectedNodeCount.toLocaleString()
                   : userCount.toLocaleString()}
               </dd>
@@ -473,7 +598,7 @@ const GraphContainer: React.FC<{}> = () => {
                 <span className="hidden lg:inline-block">Represented</span>
               </dt>
               <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {inWeight > 0 && outWeight > 0
+                {inWeight >= 0 && outWeight >= 0
                   ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
                   : totalWeight.toLocaleString()}
               </dd>
@@ -520,7 +645,7 @@ const GraphContainer: React.FC<{}> = () => {
           </div>
         </div>
       </div>
-      <footer className="bg-white fixed bottom-0 text-center w-full">
+      <footer className="bg-white absolute bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
             Built by{" "}
