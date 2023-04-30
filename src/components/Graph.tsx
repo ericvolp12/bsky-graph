@@ -222,8 +222,8 @@ const GraphContainer: React.FC<{}> = () => {
           newClusters.push({
             label: cluster.label,
             idx: community,
-            x: viewportPos.x.toFixed(2),
-            y: viewportPos.y.toFixed(2),
+            x: viewportPos.x,
+            y: viewportPos.y,
             color: cluster.color,
             size: cluster.size,
             positions: cluster.positions,
@@ -234,6 +234,28 @@ const GraphContainer: React.FC<{}> = () => {
         loadGraph(newGraph);
       }
     }, [loadGraph]);
+
+    // Render Cluster Labels
+    const renderClusterLabels = () => {
+      if (graph === null) {
+        return;
+      }
+      // create the clustersLabel layer
+      const communityClusters = graph.getAttribute("clusters");
+
+      // Initialize cluster positions
+      for (const community in communityClusters) {
+        const cluster = communityClusters[community];
+        // adapt the position to viewport coordinates
+        const viewportPos = sigma.graphToViewport(cluster as Coordinates);
+        const clusterLabel = document.getElementById(`cluster-${cluster.idx}`);
+        // update position from the viewport
+        if (clusterLabel !== null) {
+          clusterLabel.style.top = `${viewportPos.y.toFixed(2)}px`;
+          clusterLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
+        }
+      }
+    };
 
     // Select Node Effect
     useEffect(() => {
@@ -371,29 +393,8 @@ const GraphContainer: React.FC<{}> = () => {
       }
     }, [selectedNode, showSecondDegreeNeighbors]);
 
-    // Render Cluster Labels
-    const renderClusterLabels = () => {
-      if (graph === null) {
-        return;
-      }
-      // create the clustersLabel layer
-      const communityClusters = graph.getAttribute("clusters");
-
-      // Initialize cluster positions
-      for (const community in communityClusters) {
-        const cluster = communityClusters[community];
-        // adapt the position to viewport coordinates
-        const viewportPos = sigma.graphToViewport(cluster as Coordinates);
-        const clusterLabel = document.getElementById(`cluster-${cluster.idx}`);
-        // update position from the viewport
-        if (clusterLabel !== null) {
-          clusterLabel.style.top = `${viewportPos.y.toFixed(2)}px`;
-          clusterLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
-        }
-      }
-    };
-
     useEffect(() => {
+      renderClusterLabels();
       // Register the events
       registerEvents({
         clickNode: (event: any) => {
@@ -553,8 +554,8 @@ const GraphContainer: React.FC<{}> = () => {
                 className="clusterLabel absolute md:text-3xl text-xl"
                 style={{
                   color: `${cluster.color}`,
-                  top: `${cluster.y?.toFixed(2)}px`,
-                  left: `${cluster.x?.toFixed(2)}px`,
+                  top: `${cluster.y}px`,
+                  left: `${cluster.x}px`,
                   zIndex: 3,
                 }}
               >
