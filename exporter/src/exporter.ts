@@ -233,7 +233,9 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
-  louvain.assign(graph);
+  louvain.assign(graph, {
+    resolution: 1,
+  });
   log("Done assigning community partitions");
 
   // initialize clusters from graph data
@@ -251,9 +253,9 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     }
   });
 
-  // Drop any clusters with fewer than 20 members, remove the cluster assignment from any nodes in those clusters
+  // Drop any clusters with fewer than 50 members, remove the cluster assignment from any nodes in those clusters
   for (const community in communityClusters) {
-    if (communityClusters[community].size < 20) {
+    if (communityClusters[community].size < 50) {
       graph.updateEachNodeAttributes((_, atts) => {
         if (atts.community === community) {
           delete atts.community;
@@ -264,32 +266,10 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     }
   }
 
-  log(
-    `Number of clusters: ${
-      Object.keys(communityClusters).length
-    }, number of members in each cluster: ${Object.values(communityClusters)
-      .map((c) => c.size)
-      .join(", ")} `
-  );
-
-  const palette = iwanthue(Object.keys(communityClusters).length, {
-    seed: "bskyCommunities",
-    colorSpace: "intense",
-    clustering: "force-vector",
-  });
-
-  // create and assign one color by cluster
-  for (const community in communityClusters) {
-    communityClusters[community].color = palette.pop();
-  }
-
-  // change node appearance
   graph.forEachNode((_, atts) => {
     if (!atts.community) return;
     const cluster = communityClusters[atts.community];
-    // node color depends on the cluster it belongs to
     if (cluster === undefined) return;
-    atts.color = cluster.color;
     // store cluster's nodes positions to calculate cluster label position
     cluster.positions.push({ x: atts.x, y: atts.y });
   });
@@ -303,6 +283,16 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       communityClusters[community].positions.reduce((acc, p) => acc + p.y, 0) /
       communityClusters[community].positions.length;
   }
+
+  graph.setAttribute("clusters", communityClusters);
+
+  log(
+    `Number of clusters: ${
+      Object.keys(communityClusters).length
+    }, number of members in each cluster: ${Object.values(communityClusters)
+      .map((c) => c.size)
+      .join(", ")} `
+  );
 
   log("Truncating node position assignments...");
   // Reduce precision on node x and y coordinates to conserve bits in the exported graph

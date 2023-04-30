@@ -12,6 +12,7 @@ import {
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
+import iwanthue from "iwanthue";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -45,19 +46,24 @@ interface MootNode {
   weight: number;
 }
 
+interface Cluster {
+  label: string;
+  x?: number;
+  y?: number;
+  color?: string;
+  size: number;
+  positions: { x: number; y: number }[];
+}
+
 function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
   const edgeMap = new Map<string, Edge>();
-  graph?.edges().forEach((edge) => {
-    const source = graph?.source(edge);
-    const target = graph?.target(edge);
-    const weight = graph?.getEdgeAttribute(edge, "weight");
-    const ogWeight = graph?.getEdgeAttribute(edge, "ogWeight");
-    if (source !== undefined && target !== undefined && weight !== null) {
+  graph?.forEachEdge((edge, attrs, source, target) => {
+    if (source !== undefined && target !== undefined && attrs.weight !== null) {
       edgeMap.set(edge, {
         source: source,
         target: target,
-        weight: weight,
-        ogWeight: ogWeight,
+        weight: attrs.weight,
+        ogWeight: attrs.ogWeight,
       });
     }
   });
@@ -66,17 +72,12 @@ function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
 
 function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   const nodeMap = new Map<string, Node>();
-  graph?.nodes().forEach((node) => {
-    const key = graph?.getNodeAttribute(node, "key");
-    const size = graph?.getNodeAttribute(node, "size");
-    const label = graph?.getNodeAttribute(node, "label");
-    if (key !== undefined && size !== undefined && label !== undefined) {
-      nodeMap.set(label, {
-        key: key,
-        size: size,
-        label: label,
-      });
-    }
+  graph?.forEachNode((_, attrs) => {
+    nodeMap.set(attrs.label, {
+      key: attrs.key,
+      size: attrs.size,
+      label: attrs.label,
+    });
   });
   return nodeMap;
 }
@@ -141,22 +142,44 @@ const GraphContainer: React.FC<{}> = () => {
         setEdgeMap(newEdgeMap);
         setNodeMap(newNodeMap);
 
-        setUserCount(newGraph.nodes().length);
-        setEdgeCount(newGraph.edges().length);
+        const communityClusters = newGraph.getAttribute("clusters");
+
+        if (communityClusters === null) {
+          return;
+        }
+        const palette = iwanthue(Object.keys(communityClusters).length, {
+          seed: "bskyCommunityClusters2",
+          colorSpace: "intense",
+          clustering: "force-vector",
+        });
+
+        // create and assign one color by cluster
+        for (const community in communityClusters) {
+          communityClusters[community].color = palette.pop();
+        }
+
+        // Set the color of each node to the color of its cluster
+        newGraph?.updateEachNodeAttributes((_, attr) => {
+          if (
+            attr.community !== undefined &&
+            attr.community in communityClusters
+          ) {
+            attr.color = communityClusters[attr.community].color;
+          }
+          return attr;
+        });
+
+        setUserCount(newGraph.order);
+        setEdgeCount(newGraph.size);
         setTotalWeight(
-          newGraph
-            .edges()
-            .reduce(
-              (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            )
+          newGraph.reduceEdges(
+            (acc, edge) => acc + newGraph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          )
         );
-        newGraph?.nodes().forEach((node) => {
-          newGraph?.setNodeAttribute(
-            node,
-            "old-color",
-            newGraph.getNodeAttribute(node, "color")
-          );
+
+        newGraph?.forEachNode((_, attr) => {
+          attr["old-color"] = attr.color;
         });
 
         setGraph(newGraph);
@@ -180,99 +203,104 @@ const GraphContainer: React.FC<{}> = () => {
         });
 
         // Hide or fade all nodes
-        graph?.nodes().forEach((node) => {
-          graph?.setNodeAttribute(node, "highlighted", false);
+        graph?.updateEachNodeAttributes((_, attrs) => {
+          attrs.highlighted = false;
           if (showSecondDegreeNeighbors) {
-            graph?.setNodeAttribute(node, "hidden", true);
+            attrs.hidden = true;
           } else {
-            graph?.setNodeAttribute(node, "hidden", false);
-            graph?.setNodeAttribute(node, "color", "rgba(0,0,0,0.1)");
+            attrs.hidden = false;
+            attrs.color = "rgba(0,0,0,0.1)";
           }
+          return attrs;
         });
 
         // Get all neighbors of selected node
         const neighbors = graph?.neighbors(selectedNode);
 
         // Build the MootList, an ordered list of neighbors by weight
-        const mootList: MootNode[] = [];
-        neighbors?.forEach((neighbor) => {
-          if (neighbor !== selectedNode) {
-            const weight = graph?.getEdgeAttribute(
-              graph?.edges(selectedNode, neighbor)[0],
-              "weight"
-            );
-            if (weight !== undefined) {
-              mootList.push({
-                node: neighbor,
+        const mootList = graph?.reduceEdges<MootNode[]>(
+          selectedNode,
+          (acc, _, edgeAttrs, source, target, sourceAttrs, targetAttrs) => {
+            const weight = edgeAttrs.weight;
+            const existingMootEntry = acc.find((entry) => {
+              return (
+                entry.node.toString() === target.toString() ||
+                entry.node.toString() === source.toString()
+              );
+            });
+            if (existingMootEntry === undefined && source !== target) {
+              const key =
+                source === selectedNode ? targetAttrs.key : sourceAttrs.key;
+              const label =
+                source === selectedNode ? targetAttrs.label : sourceAttrs.label;
+              acc.push({
+                node: key,
                 weight: weight,
-                label: graph.getNodeAttribute(neighbor, "label"),
+                label: label,
               });
             }
-          }
-        });
+            return acc;
+          },
+          []
+        );
+
         mootList.sort((a, b) => b.weight - a.weight);
 
         setMootList(mootList);
 
         // Re-color all nodes connected to selected node
-        graph?.neighbors(selectedNode).forEach((node) => {
-          const oldColor = graph.getNodeAttribute(node, "old-color");
-          graph?.setNodeAttribute(node, "hidden", false);
-          graph?.setNodeAttribute(node, "color", oldColor);
+        graph?.forEachNeighbor(selectedNode, (node, attrs) => {
+          attrs.hidden = false;
+          attrs.color = attrs["old-color"];
           // Set all 2nd degree neighbors to a light grey
           if (showSecondDegreeNeighbors) {
-            graph?.neighbors(node).forEach((neighbor) => {
+            graph?.forEachNeighbor(node, (neighbor, neighborAttrs) => {
               if (!neighbors?.includes(neighbor)) {
-                graph?.setNodeAttribute(neighbor, "hidden", false);
-                graph?.setNodeAttribute(neighbor, "color", "rgba(0,0,0,0.1)");
+                neighborAttrs.hidden = false;
+                neighborAttrs.color = "rgba(0,0,0,0.1)";
               }
               // Show 2nd degree neighbor edges
-              graph?.edges(node, neighbor).forEach((edge) => {
-                graph?.setEdgeAttribute(edge, "hidden", false);
+              graph?.forEachEdge(node, neighbor, (_, attrs) => {
+                attrs.hidden = false;
               });
             });
           }
         });
 
         // Re-show edges connected to selected node
-        graph?.inEdges(selectedNode).forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
-          // Make in-edges a soft sky-blue
-          graph?.setEdgeAttribute(edge, "color", "#4b33ff");
+        graph?.forEachInEdge(selectedNode, (_, attrs) => {
+          attrs.hidden = false;
+          attrs.color = "#4b33ff";
         });
 
-        graph?.outEdges(selectedNode).forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
-          // Make out a burnt orange
-          graph?.setEdgeAttribute(edge, "color", "#ff5254");
+        graph?.forEachOutEdge(selectedNode, (_, attrs) => {
+          attrs.hidden = false;
+          attrs.color = "#ff5254";
         });
 
         // Re-color selected node and highlight it
-        graph.setNodeAttribute(
-          selectedNode,
-          "color",
-          graph.getNodeAttribute(selectedNode, "old-color")
-        );
-        graph.setNodeAttribute(selectedNode, "highlighted", true);
-        graph.setNodeAttribute(selectedNode, "hidden", false);
+        graph?.updateNodeAttributes(selectedNode, (attrs) => {
+          attrs.color = attrs["old-color"];
+          attrs.highlighted = true;
+          attrs.hidden = false;
+          return attrs;
+        });
 
         // Update selected node count and weight for display
-        setSelectedNodeCount(graph?.neighbors(selectedNode).length || 0);
+        setSelectedNodeCount(graph?.degree(selectedNode) || 0);
         setInWeight(
-          graph
-            ?.inEdges(selectedNode)
-            .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            ) || 0
+          graph?.reduceInEdges(
+            selectedNode,
+            (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          ) || 0
         );
         setOutWeight(
-          graph
-            ?.outEdges(selectedNode)
-            .reduce(
-              (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
-              0
-            ) || 0
+          graph?.reduceOutEdges(
+            selectedNode,
+            (acc, edge) => acc + graph.getEdgeAttribute(edge, "ogWeight"),
+            0
+          ) || 0
         );
         setSelectedNodeEdges(graph?.edges(selectedNode) || null);
         sigma.refresh();
