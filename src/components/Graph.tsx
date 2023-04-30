@@ -68,7 +68,7 @@ knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
 knownClusterColorMappings.set("Artists", "#eac72d");
 knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
 knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
-knownClusterColorMappings.set("Queer+POC in Tech", "#870566	");
+knownClusterColorMappings.set("Goose Metacluster", "#870566	");
 knownClusterColorMappings.set("TPOT", "#01aee3");
 knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
 
