@@ -548,7 +548,7 @@ const GraphContainer: React.FC<{}> = () => {
           </ul>
         </div>
       )}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden w-screen h-screen top-0 left-0 absolute">
         {clusters.map((cluster) => {
           if (cluster.label !== undefined) {
             return (
