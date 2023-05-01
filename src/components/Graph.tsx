@@ -65,12 +65,14 @@ knownClusterColorMappings.set("Korean Language Cluster", "#0e448f");
 knownClusterColorMappings.set("Brasil Supercluster", "#009739");
 knownClusterColorMappings.set("Brasilian Swiftie Subcluster", "#6e1799");
 knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
-knownClusterColorMappings.set("Artists", "#eac72d");
+knownClusterColorMappings.set("Web3", "#eac72d");
+knownClusterColorMappings.set("Musicians", "#ff7b7b");
 knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
 knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
 knownClusterColorMappings.set("Goose Metacluster", "#870566	");
 knownClusterColorMappings.set("TPOT", "#01aee3");
 knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
+// knownClusterColorMappings.set("BIPOC in Tech", "#ff7b7b");
 
 function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {
   const edgeMap = new Map<string, Edge>();

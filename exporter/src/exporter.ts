@@ -27,28 +27,69 @@ interface Cluster {
   x?: number;
   y?: number;
   color?: string;
+  prio?: number;
   size: number;
   representative?: string;
   positions: { x: number; y: number }[];
 }
 
-const clusterRepresentatives: Map<string, string> = new Map();
+interface ClusterRepPrio {
+  label: string;
+  prio: number;
+}
 
-clusterRepresentatives.set("yui.bsky.social", "Japanese Language Cluster");
-clusterRepresentatives.set("shahbazi.bsky.social", "Persian Language Cluster");
-clusterRepresentatives.set("burum.bsky.social", "Korean Language Cluster");
-clusterRepresentatives.set("livialamblet.com", "Brasil Supercluster");
-clusterRepresentatives.set("hoax.bsky.social", "Brasilian Swiftie Subcluster");
-clusterRepresentatives.set("vedat.bsky.social", "Turkish Language Minicluster");
-clusterRepresentatives.set("awhurst.bsky.social", "Artists");
-clusterRepresentatives.set("wesbos.com", "Front-end Developers");
-clusterRepresentatives.set("pfrazee.com", "BSky English Language Metacluster");
-clusterRepresentatives.set("lookitup.baby", "Goose Metacluster");
+const clusterRepresentatives: Map<string, ClusterRepPrio> = new Map();
+
+clusterRepresentatives.set("yui.bsky.social", {
+  label: "Japanese Language Cluster",
+  prio: 5,
+});
+clusterRepresentatives.set("shahbazi.bsky.social", {
+  label: "Persian Language Cluster",
+  prio: 5,
+});
+clusterRepresentatives.set("burum.bsky.social", {
+  label: "Korean Language Cluster",
+  prio: 5,
+});
+clusterRepresentatives.set("livialamblet.com", {
+  label: "Brasil Supercluster",
+  prio: 5,
+});
+clusterRepresentatives.set("hoax.bsky.social", {
+  label: "Brasilian Swiftie Subcluster",
+  prio: 4,
+});
+clusterRepresentatives.set("vedat.bsky.social", {
+  label: "Turkish Language Minicluster",
+  prio: 4,
+});
+clusterRepresentatives.set("awhurst.bsky.social", { label: "Web3", prio: 4 });
+clusterRepresentatives.set("wesbos.com", {
+  label: "Front-end Developers",
+  prio: 3,
+});
+clusterRepresentatives.set("pfrazee.com", {
+  label: "BSky English Language Metacluster",
+  prio: 5,
+});
+clusterRepresentatives.set("lookitup.baby", {
+  label: "Goose Metacluster",
+  prio: 4,
+});
+clusterRepresentatives.set("johnmichiemusic.com", {
+  label: "Musicians",
+  prio: 3,
+});
 clusterRepresentatives.set(
   "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
-  "TPOT"
+  { label: "TPOT", prio: 4 }
 );
-clusterRepresentatives.set("junlper.bsky.social", "Trans + Queer Shitposters");
+clusterRepresentatives.set("junlper.bsky.social", {
+  label: "Trans + Queer Shitposters",
+  prio: 4,
+});
+// clusterRepresentatives.set("itguyry.com", "BIPOC in Tech");
 
 const filteredHandles = ["mattyglesias.bsky.social"];
 
@@ -268,22 +309,28 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   const communityClusters: { [key: string]: Cluster } = {};
 
   graph.forEachNode((_, atts) => {
-    if (!communityClusters[atts.community]) {
-      communityClusters[atts.community] = {
-        idx: atts.community,
+    const idx = atts.community;
+    // If this node is in a community that hasn't been seen yet, create a new cluster
+    if (!communityClusters[idx]) {
+      communityClusters[idx] = {
+        idx: idx,
         positions: [],
         size: 1,
       };
     } else {
-      communityClusters[atts.community].size++;
+      // Otherwise, increment the size of the cluster
+      communityClusters[idx].size++;
     }
-    if (
-      communityClusters[atts.community].representative === undefined &&
-      clusterRepresentatives.get(atts.label) !== undefined
-    ) {
-      communityClusters[atts.community].representative = atts.label;
-      communityClusters[atts.community].label =
-        clusterRepresentatives.get(atts.label) || "";
+    const repClusterPrio = clusterRepresentatives.get(atts.label);
+    // If this node is the representative of its cluster, set the cluster representative
+    if (repClusterPrio !== undefined) {
+      // If the cluster already has a representative, check if this rep's cluster has a higher priority
+      const currentPrio = communityClusters[idx].prio;
+      if (currentPrio === undefined || repClusterPrio.prio > currentPrio) {
+        communityClusters[idx].representative = atts.label;
+        communityClusters[idx].prio = repClusterPrio.prio;
+        communityClusters[idx].label = repClusterPrio.label;
+      }
     }
   });
 
