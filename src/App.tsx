@@ -1,15 +1,16 @@
 import GraphContainer from "./components/Graph";
 import "./App.css";
-import {
-  BrowserRouter,
-  RouterProvider,
-  createBrowserRouter,
-} from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import TreeVisContainer from "./components/threads/TreeVis";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <GraphContainer />,
+  },
+  {
+    path: "/thread",
+    element: <TreeVisContainer />,
   },
 ]);
 
