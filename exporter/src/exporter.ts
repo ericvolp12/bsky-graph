@@ -77,10 +77,16 @@ clusterRepresentatives.set("lookitup.baby", {
   label: "Goose Metacluster",
   prio: 4,
 });
-clusterRepresentatives.set("johnmichiemusic.com", {
-  label: "Musicians",
+// clusterRepresentatives.set("johnmichiemusic.com", {
+//   label: "Musicians",
+//   prio: 2,
+// });
+
+clusterRepresentatives.set("amynemmity.bsky.social", {
+  label: "Wrestling Subcluster",
   prio: 3,
 });
+
 clusterRepresentatives.set(
   "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
   { label: "TPOT", prio: 4 }
@@ -201,6 +207,8 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   const logMinWeight = Math.log(minWeight);
   const logMaxWeight = Math.log(maxWeight);
+  const minEdgeSize = 0.2;
+  const maxEdgeSize = 4;
 
   log("Adding edges...");
   // Then, set the size of each edge based on its weight relative to the min and max weights
@@ -221,9 +229,9 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
     // Calculate the size based on the logarithm of the edge weight relative to the range of weights
     const size =
-      0.2 +
+      minEdgeSize +
       ((Math.log(weight) - logMinWeight) / (logMaxWeight - logMinWeight)) *
-        (6 - 0.2);
+        (maxEdgeSize - minEdgeSize);
 
     graph.addEdge(
       indexNodes.get(edge.source)?.key,
@@ -301,7 +309,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1,
+    resolution: 1.01,
   });
   log("Done assigning community partitions");
 

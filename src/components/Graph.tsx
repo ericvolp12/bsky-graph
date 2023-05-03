@@ -67,6 +67,7 @@ knownClusterColorMappings.set("Brasilian Swiftie Subcluster", "#6e1799");
 knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
 knownClusterColorMappings.set("Web3", "#eac72d");
 knownClusterColorMappings.set("Musicians", "#ff7b7b");
+knownClusterColorMappings.set("Wrestling Subcluster", "#ff7b7b");
 knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
 knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
 knownClusterColorMappings.set("Goose Metacluster", "#870566	");
@@ -548,7 +549,7 @@ const GraphContainer: React.FC<{}> = () => {
           </ul>
         </div>
       )}
-      <div className="overflow-hidden w-screen h-screen top-0 left-0 absolute">
+      <div className="overflow-hidden w-screen h-screen top-0 left-0">
         {clusters.map((cluster) => {
           if (cluster.label !== undefined) {
             return (
