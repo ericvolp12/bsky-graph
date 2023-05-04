@@ -309,7 +309,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.01,
+    resolution: 1.0,
   });
   log("Done assigning community partitions");
 
