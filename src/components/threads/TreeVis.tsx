@@ -208,6 +208,21 @@ const TreeVisContainer: React.FC<{}> = () => {
           };
           setSearchParams(newParams);
         },
+        enterNode(event: any) {
+          graph?.updateNodeAttributes(event.node, (attrs) => {
+            attrs.old_label = attrs.label;
+            attrs.label = attrs.text;
+            return attrs;
+          });
+          sigma.refresh();
+        },
+        leaveNode(event: any) {
+          graph?.updateNodeAttributes(event.node, (attrs) => {
+            attrs.label = attrs.old_label;
+            return attrs;
+          });
+          sigma.refresh();
+        },
         doubleClickNode: (event: any) => {
           window.open(
             `https://staging.bsky.app/profile/${graph?.getNodeAttribute(
@@ -239,6 +254,11 @@ const TreeVisContainer: React.FC<{}> = () => {
           ...post,
           key: post.id,
         });
+      }
+
+      let target = post.parent_post_id;
+      if (target != null && nodesMap.get(target) === undefined) {
+        return;
       }
 
       edges.push({
@@ -275,7 +295,7 @@ const TreeVisContainer: React.FC<{}> = () => {
         size:
           minSize +
           (maxSize - minSize) * ((maxDepth - node.depth + 1) / maxDepth),
-        label: node.text,
+        label: node.text.substring(0, 15) + "...",
       });
     }
 
@@ -333,7 +353,7 @@ const TreeVisContainer: React.FC<{}> = () => {
     >
       <ThreadTree />
 
-      <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
+      {/* <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -373,7 +393,7 @@ const TreeVisContainer: React.FC<{}> = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
       <footer className="bg-white absolute bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
