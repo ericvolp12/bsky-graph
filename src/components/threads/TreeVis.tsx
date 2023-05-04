@@ -40,16 +40,20 @@ interface Node {
   label: string;
 }
 
-interface ThreadItem {
+interface Post {
   id: string;
-  key: string;
   text: string;
   parent_post_id: string | null;
   root_post_id: string | null;
   author_did: string;
-  handle: string;
   created_at: string;
   has_embedded_media: boolean;
+}
+
+interface ThreadItem {
+  key: string;
+  author_handle: string;
+  post: Post;
   depth: number;
 }
 
@@ -120,9 +124,9 @@ const TreeVisContainer: React.FC<{}> = () => {
         // Assign a random color to each node author by did
         const colorMap = new Map<string, string>();
         newGraph?.forEachNode((_, attrs) => {
-          if (!colorMap.has(attrs.author_did)) {
+          if (!colorMap.has(attrs.post.author_did)) {
             colorMap.set(
-              attrs.author_did,
+              attrs.post.author_did,
               palette[Math.floor(Math.random() * 10)]
             );
           }
@@ -130,7 +134,7 @@ const TreeVisContainer: React.FC<{}> = () => {
 
         // Set the color of each node to the color of its cluster
         newGraph?.updateEachNodeAttributes((_, attr) => {
-          attr.color = colorMap.get(attr.author_did);
+          attr.color = colorMap.get(attr.post.author_did);
           return attr;
         });
 
@@ -222,7 +226,7 @@ const TreeVisContainer: React.FC<{}> = () => {
         enterNode(event: any) {
           graph?.updateNodeAttributes(event.node, (attrs) => {
             attrs.old_label = attrs.label;
-            attrs.label = attrs.text;
+            attrs.label = attrs.post.text;
             return attrs;
           });
           sigma.refresh();
@@ -254,35 +258,37 @@ const TreeVisContainer: React.FC<{}> = () => {
   };
 
   async function fetchGraph() {
-    const textGraph = await fetch("/goosethread.json");
+    const textGraph = await fetch(
+      "http://localhost:8080/thread?authorHandle=ess.bsky.social&postID=3jutcrkixfn2m"
+    );
     const responseJSON = await textGraph.json();
     const nodesMap: Map<string, ThreadItem> = new Map();
     const edges: Edge[] = [];
 
     responseJSON.forEach((post: ThreadItem) => {
-      if (!nodesMap.has(post.id)) {
-        nodesMap.set(post.id, {
+      if (!nodesMap.has(post.post.id)) {
+        nodesMap.set(post.post.id, {
           ...post,
-          key: post.id,
+          key: post.post.id,
         });
       }
 
-      let target = post.parent_post_id;
+      let target = post.post.parent_post_id;
       if (target != null && nodesMap.get(target) === undefined) {
         return;
       }
 
       edges.push({
-        source: post.id,
-        target: post.parent_post_id || "root",
+        source: post.post.id,
+        target: post.post.parent_post_id || "root",
       });
     });
 
     // Sort the nodes by did so that the order is consistent
     const nodes: ThreadItem[] = Array.from(nodesMap.values()).sort((a, b) => {
-      if (a.id < b.id) {
+      if (a.post.id < b.post.id) {
         return -1;
-      } else if (a.id > b.id) {
+      } else if (a.post.id > b.post.id) {
         return 1;
       } else {
         return 0;
@@ -301,12 +307,12 @@ const TreeVisContainer: React.FC<{}> = () => {
     for (let i = 0; i < totalNodes; i++) {
       const node = nodes[i];
       // Split node text on a newline every 30 characters
-      graph.addNode(node.id, {
+      graph.addNode(node.post.id, {
         ...node,
         size:
           minSize +
           (maxSize - minSize) * ((maxDepth - node.depth + 1) / maxDepth),
-        label: node.text.substring(0, 15) + "...",
+        label: node.post.text.substring(0, 15) + "...",
       });
     }
 
@@ -321,7 +327,7 @@ const TreeVisContainer: React.FC<{}> = () => {
 
     circular.assign(graph);
     const settings = forceAtlas2.inferSettings(graph);
-    const iterationCount = 2500;
+    const iterationCount = 600;
     console.log(`Running ${iterationCount} Force Atlas simulations...`);
     forceAtlas2.assign(graph, { settings, iterations: iterationCount });
     console.log("Done running Force Atlas");
