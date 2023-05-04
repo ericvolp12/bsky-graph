@@ -117,9 +117,20 @@ const TreeVisContainer: React.FC<{}> = () => {
           clustering: "force-vector",
         });
 
+        // Assign a random color to each node author by did
+        const colorMap = new Map<string, string>();
+        newGraph?.forEachNode((_, attrs) => {
+          if (!colorMap.has(attrs.author_did)) {
+            colorMap.set(
+              attrs.author_did,
+              palette[Math.floor(Math.random() * 10)]
+            );
+          }
+        });
+
         // Set the color of each node to the color of its cluster
         newGraph?.updateEachNodeAttributes((_, attr) => {
-          attr.color = palette[Math.floor(Math.random() * 10)];
+          attr.color = colorMap.get(attr.author_did);
           return attr;
         });
 
@@ -310,7 +321,7 @@ const TreeVisContainer: React.FC<{}> = () => {
 
     circular.assign(graph);
     const settings = forceAtlas2.inferSettings(graph);
-    const iterationCount = 600;
+    const iterationCount = 2500;
     console.log(`Running ${iterationCount} Force Atlas simulations...`);
     forceAtlas2.assign(graph, { settings, iterations: iterationCount });
     console.log("Done running Force Atlas");
