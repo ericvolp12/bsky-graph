@@ -1,19 +1,36 @@
 import { FC } from "react";
+import { SelectedNode } from "./TreeVis";
 
 interface PostViewProps {
-  author_handle: string;
-  text: string;
+  node: SelectedNode;
 }
 
-const PostView: FC<PostViewProps> = ({ author_handle, text }) => {
+const PostView: FC<PostViewProps> = ({ node }) => {
   return (
     <div className="bg-white shadow sm:rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
+      <div className="px-3 py-4 sm:p-6">
         <h3 className="text-base font-semibold leading-6 text-gray-900">
-          {author_handle}
+          <a
+            href={`https://staging.bsky.app/profile/${node.author_did}`}
+            className="text-indigo-500 hover:text-indigo-600"
+          >
+            {node.author_handle}
+          </a>
         </h3>
-        <div className="mt-2 max-w-sm text-sm text-gray-500 break-words">
-          <p>{text}</p>
+
+        <div className="mt-1 max-w-sm text-sm text-gray-600 break-words">
+          {node.text}
+        </div>
+        <div className="mt-2 max-w-sm text-xs text-gray-400">
+          <span>
+            <a
+              href={`https://staging.bsky.app/profile/${node.author_did}/post/${node.id}`}
+              className="text-blue-500 hover:text-blue-600"
+            >
+              View Post
+            </a>
+          </span>
+          <span>{node.has_media ? " | Post has Attached Media" : ""}</span>
         </div>
       </div>
     </div>

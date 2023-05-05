@@ -16,6 +16,7 @@ import circular from "graphology-layout/circular";
 import iwanthue from "iwanthue";
 import ErrorMsg from "./ErrorMsg";
 import PostView from "./PostView";
+import { Coordinates } from "sigma/types";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -58,10 +59,12 @@ interface ThreadItem {
   depth: number;
 }
 
-interface SelectedNode {
-  key: string;
+export interface SelectedNode {
+  id: string;
   text: string;
   author_handle: string;
+  author_did: string;
+  has_media: boolean;
   x: number;
   y: number;
 }
@@ -95,6 +98,10 @@ const TreeVisContainer: React.FC<{}> = () => {
 
   // Selected Node properties
   const [selectedNode, setSelectedNode] = React.useState<SelectedNode | null>(
+    null
+  );
+
+  const [hoveredNode, setHoveredNode] = React.useState<SelectedNode | null>(
     null
   );
 
@@ -168,23 +175,35 @@ const TreeVisContainer: React.FC<{}> = () => {
       // Register the events
       registerEvents({
         clickNode: ({ event, node, preventSigmaDefault }: any) => {
-          setHardSelected(true);
+          if (hoveredNode && hoveredNode.id === node) {
+            setSelectedNode(hoveredNode);
+            return;
+          }
+          const post = graph?.getNodeAttribute(node, "post");
+          setSelectedNode({
+            id: node,
+            text: post.text,
+            author_handle: graph?.getNodeAttribute(node, "author_handle"),
+            author_did: post.author_did,
+            has_media: post.has_embedded_media,
+            x: event.x,
+            y: event.y,
+          });
         },
         enterNode({ event, node, preventSigmaDefault }: any) {
-          if (!hardSelected) {
-            setSelectedNode({
-              key: node,
-              text: graph?.getNodeAttribute(node, "post").text,
-              author_handle: graph?.getNodeAttribute(node, "author_handle"),
-              x: event.x,
-              y: event.y,
-            });
-          }
+          const post = graph?.getNodeAttribute(node, "post");
+          setHoveredNode({
+            id: node,
+            text: post.text,
+            author_handle: graph?.getNodeAttribute(node, "author_handle"),
+            author_did: post.author_did,
+            has_media: post.has_embedded_media,
+            x: event.x,
+            y: event.y,
+          });
         },
         leaveNode(event: any) {
-          if (!hardSelected) {
-            setSelectedNode(null);
-          }
+          setHoveredNode(null);
         },
         doubleClickNode: (event: any) => {
           window.open(
@@ -195,10 +214,22 @@ const TreeVisContainer: React.FC<{}> = () => {
             "_blank"
           );
         },
-        afterRender: () => {},
+        afterRender: () => {
+          if (selectedNode) {
+            const attrs = graph?.getNodeAttributes(selectedNode.id);
+            if (attrs === undefined) {
+              return;
+            }
+            const viewportPos = sigma.graphToViewport(attrs as Coordinates);
+            setSelectedNode({
+              ...selectedNode,
+              x: viewportPos.x,
+              y: viewportPos.y,
+            });
+          }
+        },
         clickStage: (_: any) => {
           setSelectedNode(null);
-          setHardSelected(false);
         },
       });
     }, [registerEvents]);
@@ -208,7 +239,7 @@ const TreeVisContainer: React.FC<{}> = () => {
 
   async function fetchGraph(authorHandle: string, postId: string) {
     const response = await fetch(
-      `http://localhost:8080/thread?authorHandle=${authorHandle}&postID=${postId}`
+      `http://10.0.6.32:8080/thread?authorHandle=${authorHandle}&postID=${postId}`
     );
     if (response.status !== 200) {
       console.error("Error fetching thread");
@@ -334,10 +365,18 @@ const TreeVisContainer: React.FC<{}> = () => {
             left: `${selectedNode.x + 20}px`,
           }}
         >
-          <PostView
-            author_handle={selectedNode.author_handle || ""}
-            text={selectedNode.text || ""}
-          />
+          <PostView node={selectedNode} />
+        </div>
+      )}
+      {!selectedNode && hoveredNode && (
+        <div
+          className="absolute postView z-50"
+          style={{
+            top: `${hoveredNode.y - 20}px`,
+            left: `${hoveredNode.x + 20}px`,
+          }}
+        >
+          <PostView node={hoveredNode} />
         </div>
       )}
       {!error && (
