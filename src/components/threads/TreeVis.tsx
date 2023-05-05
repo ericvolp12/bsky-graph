@@ -15,6 +15,7 @@ import { CustomSearch } from "../CustomSearch";
 import iwanthue from "iwanthue";
 import circular from "graphology-layout/circular";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import ErrorMsg from "./ErrorMsg";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -72,6 +73,8 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
 const TreeVisContainer: React.FC<{}> = () => {
   // Router info
   const [searchParams, setSearchParams] = useSearchParams();
+  const [error, setError] = React.useState<string | null>(null);
+  const [httpStatus, setHttpStatus] = React.useState<number | null>(null);
 
   // Graph raw data
   const [graphDump, setGraphDump] = React.useState<MultiDirectedGraph | null>(
@@ -217,11 +220,11 @@ const TreeVisContainer: React.FC<{}> = () => {
       // Register the events
       registerEvents({
         clickNode: (event: any) => {
-          const nodeLabel = graph?.getNodeAttribute(event.node, "label");
-          let newParams: { s?: string; ml?: string } = {
-            s: `${nodeLabel}`,
-          };
-          setSearchParams(newParams);
+          // const nodeLabel = graph?.getNodeAttribute(event.node, "label");
+          // let newParams: { s?: string; ml?: string } = {
+          //   s: `${nodeLabel}`,
+          // };
+          // setSearchParams(newParams);
         },
         enterNode(event: any) {
           graph?.updateNodeAttributes(event.node, (attrs) => {
@@ -249,7 +252,7 @@ const TreeVisContainer: React.FC<{}> = () => {
         },
         afterRender: () => {},
         clickStage: (_: any) => {
-          setSearchParams({});
+          // setSearchParams({});
         },
       });
     }, [registerEvents]);
@@ -257,11 +260,18 @@ const TreeVisContainer: React.FC<{}> = () => {
     return null;
   };
 
-  async function fetchGraph() {
-    const textGraph = await fetch(
-      "http://localhost:8080/thread?authorHandle=ess.bsky.social&postID=3jutcrkixfn2m"
+  async function fetchGraph(authorHandle: string, postId: string) {
+    const response = await fetch(
+      `http://localhost:8080/thread?authorHandle=${authorHandle}&postID=${postId}`
     );
-    const responseJSON = await textGraph.json();
+    if (response.status !== 200) {
+      console.error("Error fetching thread");
+      setError(`Error fetching thread: ${response.status}`);
+      setHttpStatus(response.status);
+      return;
+    }
+
+    const responseJSON = await response.json();
     const nodesMap: Map<string, ThreadItem> = new Map();
     const edges: Edge[] = [];
 
@@ -307,11 +317,15 @@ const TreeVisContainer: React.FC<{}> = () => {
     for (let i = 0; i < totalNodes; i++) {
       const node = nodes[i];
       // Split node text on a newline every 30 characters
+      let size =
+        minSize +
+        (maxSize - minSize) * ((maxDepth - node.depth + 1) / maxDepth);
+      if (node.depth === 0) {
+        size = maxSize + 3;
+      }
       graph.addNode(node.post.id, {
         ...node,
-        size:
-          minSize +
-          (maxSize - minSize) * ((maxDepth - node.depth + 1) / maxDepth),
+        size,
         label: node.post.text.substring(0, 15) + "...",
       });
     }
@@ -350,27 +364,52 @@ const TreeVisContainer: React.FC<{}> = () => {
   }, [searchParams, nodeMap]);
 
   useEffect(() => {
-    fetchGraph();
-  }, []);
+    const authorHandle = searchParams.get("a");
+    const postID = searchParams.get("p");
+    if (authorHandle === null || postID === null) {
+      return;
+    }
+    fetchGraph(authorHandle, postID);
+  }, [searchParams]);
 
   return (
-    <SigmaContainer
-      graph={MultiDirectedGraph}
-      style={{ height: "100vh" }}
-      settings={{
-        nodeProgramClasses: { image: getNodeProgramImage() },
-        defaultNodeType: "image",
-        defaultEdgeType: "arrow",
-        labelDensity: 0.2,
-        labelGridCellSize: 60,
-        labelRenderedSizeThreshold: 1,
-        labelFont: "Lato, sans-serif",
-        zIndex: true,
-      }}
-    >
-      <ThreadTree />
+    <div>
+      {error && (
+        <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
+          <div className="text-center">
+            <p className="text-base font-semibold text-indigo-600">
+              {httpStatus}
+            </p>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+              We Failed to Load your Graph
+            </h1>
+            <p className="mt-6 text-base leading-7 text-gray-600">
+              Sorry, we were unable to load the thread you're looking for.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6 text-left">
+              <ErrorMsg error={error} />
+            </div>
+          </div>
+        </main>
+      )}
+      {!error && (
+        <SigmaContainer
+          graph={MultiDirectedGraph}
+          style={{ height: "100vh" }}
+          settings={{
+            nodeProgramClasses: { image: getNodeProgramImage() },
+            defaultNodeType: "image",
+            defaultEdgeType: "arrow",
+            labelDensity: 0.2,
+            labelGridCellSize: 60,
+            labelRenderedSizeThreshold: 1,
+            labelFont: "Lato, sans-serif",
+            zIndex: true,
+          }}
+        >
+          <ThreadTree />
 
-      {/* <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
+          {/* <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
         <div className="bg-white shadow sm:rounded-lg pb-1">
           <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
             <div className="flex flex-col items-baseline bg-white text-center">
@@ -411,6 +450,8 @@ const TreeVisContainer: React.FC<{}> = () => {
           </div>
         </div>
       </div> */}
+        </SigmaContainer>
+      )}
       <footer className="bg-white absolute bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
@@ -446,7 +487,7 @@ const TreeVisContainer: React.FC<{}> = () => {
           </span>
         </div>
       </footer>
-    </SigmaContainer>
+    </div>
   );
 };
 
