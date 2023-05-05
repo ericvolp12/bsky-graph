@@ -13,6 +13,7 @@ const PostView: FC<PostViewProps> = ({ node }) => {
           <a
             href={`https://staging.bsky.app/profile/${node.author_did}`}
             className="text-indigo-500 hover:text-indigo-600"
+            target="_blank"
           >
             {node.author_handle}
           </a>
@@ -26,6 +27,7 @@ const PostView: FC<PostViewProps> = ({ node }) => {
             <a
               href={`https://staging.bsky.app/profile/${node.author_did}/post/${node.id}`}
               className="text-blue-500 hover:text-blue-600"
+              target="_blank"
             >
               View Post
             </a>
