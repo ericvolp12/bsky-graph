@@ -260,14 +260,14 @@ const TreeVisContainer: React.FC<{}> = () => {
         });
       }
 
-      let target = post.post.parent_post_id;
-      if (target != null && nodesMap.get(target) === undefined) {
+      let source = post.post.parent_post_id;
+      if (source != null && nodesMap.get(source) === undefined) {
         return;
       }
 
       edges.push({
-        source: post.post.id,
-        target: post.post.parent_post_id || "root",
+        source: post.post.parent_post_id || "root",
+        target: post.post.id,
       });
     });
 
@@ -287,7 +287,7 @@ const TreeVisContainer: React.FC<{}> = () => {
     const totalNodes = nodes.length;
 
     const maxDepth = Math.max(...nodes.map((node) => node.depth));
-    const maxSize = 5;
+    const maxSize = 6;
     const minSize = 1;
 
     console.log("Adding nodes...");
@@ -310,7 +310,7 @@ const TreeVisContainer: React.FC<{}> = () => {
     console.log("Adding edges...");
     for (let i = 0; i < totalEdges; i++) {
       const edge = edges[i];
-      if (edge.target === "root") {
+      if (edge.source === "root") {
         continue;
       }
       graph.addEdge(edge.source, edge.target);
