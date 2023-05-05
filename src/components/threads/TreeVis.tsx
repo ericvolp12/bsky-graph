@@ -1,21 +1,21 @@
-import React, { FC, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import { MultiDirectedGraph } from "graphology";
-import { formatDistanceToNow, parseISO } from "date-fns";
-import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import {
   SigmaContainer,
-  useRegisterEvents,
   useLoadGraph,
+  useRegisterEvents,
   useSigmaContext,
 } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
+import { formatDistanceToNow, parseISO } from "date-fns";
+import { MultiDirectedGraph } from "graphology";
+import React, { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
-import { CustomSearch } from "../CustomSearch";
-import iwanthue from "iwanthue";
-import circular from "graphology-layout/circular";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import circular from "graphology-layout/circular";
+import iwanthue from "iwanthue";
 import ErrorMsg from "./ErrorMsg";
+import PostView from "./PostView";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -58,6 +58,14 @@ interface ThreadItem {
   depth: number;
 }
 
+interface SelectedNode {
+  key: string;
+  text: string;
+  author_handle: string;
+  x: number;
+  y: number;
+}
+
 function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   const nodeMap = new Map<string, Node>();
   graph?.forEachNode((_, attrs) => {
@@ -86,15 +94,14 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [userCount, setUserCount] = React.useState<number>(0);
 
   // Selected Node properties
-  const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = React.useState<SelectedNode | null>(
+    null
+  );
+
   const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(-1);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
     string[] | null
   >(null);
-
-  const previousSelectedNode: string | null = usePrevious<string | null>(
-    selectedNode
-  );
 
   // Graph State
   const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
@@ -106,6 +113,8 @@ const TreeVisContainer: React.FC<{}> = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
     const { sigma, container } = useSigmaContext();
+
+    sigma.settings.hoverRenderer = () => {};
 
     useEffect(() => {
       // Create the graph
@@ -153,69 +162,6 @@ const TreeVisContainer: React.FC<{}> = () => {
       }
     }, [loadGraph]);
 
-    // Select Node Effect
-    useEffect(() => {
-      if (
-        graph !== null &&
-        selectedNode !== null &&
-        selectedNode !== previousSelectedNode
-      ) {
-        // Hide all edges
-        graph?.edges().forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", true);
-          // Set all edges to a light gray
-          graph?.setEdgeAttribute(edge, "color", "#e0e0e0");
-        });
-
-        // Hide or fade all nodes
-        graph?.updateEachNodeAttributes((_, attrs) => {
-          attrs.highlighted = false;
-          attrs.hidden = false;
-          attrs.color = "rgba(0,0,0,0.1)";
-
-          return attrs;
-        });
-
-        // Re-color all nodes connected to selected node
-        graph?.forEachNeighbor(selectedNode, (_, attrs) => {
-          attrs.hidden = false;
-          attrs.color = attrs["old-color"];
-        });
-
-        graph?.forEachEdge(selectedNode, (_, attrs) => {
-          attrs.hidden = false;
-          attrs.color = "#ff5254";
-        });
-
-        // Re-color selected node and highlight it
-        graph?.updateNodeAttributes(selectedNode, (attrs) => {
-          attrs.color = attrs["old-color"];
-          attrs.highlighted = true;
-          attrs.hidden = false;
-          return attrs;
-        });
-
-        // Update selected node count and weight for display
-        setSelectedNodeCount(graph?.degree(selectedNode) || 0);
-        setSelectedNodeEdges(graph?.edges(selectedNode) || null);
-        sigma.refresh();
-      } else if (graph !== null && selectedNode === null) {
-        graph?.edges().forEach((edge) => {
-          graph?.setEdgeAttribute(edge, "hidden", false);
-          graph?.setEdgeAttribute(edge, "color", "#e0e0e0");
-        });
-        graph?.nodes().forEach((node) => {
-          const oldColor = graph.getNodeAttribute(node, "old-color");
-          graph?.setNodeAttribute(node, "color", oldColor);
-          graph?.setNodeAttribute(node, "highlighted", false);
-          graph?.setNodeAttribute(node, "hidden", false);
-        });
-        setSelectedNodeCount(-1);
-        setSelectedNodeEdges(null);
-        sigma.refresh();
-      }
-    }, [selectedNode]);
-
     useEffect(() => {
       // Register the events
       registerEvents({
@@ -226,20 +172,17 @@ const TreeVisContainer: React.FC<{}> = () => {
           // };
           // setSearchParams(newParams);
         },
-        enterNode(event: any) {
-          graph?.updateNodeAttributes(event.node, (attrs) => {
-            attrs.old_label = attrs.label;
-            attrs.label = attrs.post.text;
-            return attrs;
+        enterNode({ event, node, preventSigmaDefault }: any) {
+          setSelectedNode({
+            key: node,
+            text: graph?.getNodeAttribute(node, "post").text,
+            author_handle: graph?.getNodeAttribute(node, "author_handle"),
+            x: event.x,
+            y: event.y,
           });
-          sigma.refresh();
         },
         leaveNode(event: any) {
-          graph?.updateNodeAttributes(event.node, (attrs) => {
-            attrs.label = attrs.old_label;
-            return attrs;
-          });
-          sigma.refresh();
+          setSelectedNode(null);
         },
         doubleClickNode: (event: any) => {
           window.open(
@@ -352,18 +295,6 @@ const TreeVisContainer: React.FC<{}> = () => {
   }
 
   useEffect(() => {
-    const selectedUserFromParams = searchParams.get("s");
-    if (selectedUserFromParams !== null) {
-      const selectedNodeKey = nodeMap.get(selectedUserFromParams)?.key;
-      if (selectedNodeKey !== undefined) {
-        setSelectedNode(selectedNodeKey.toString());
-      }
-    } else {
-      setSelectedNode(null);
-    }
-  }, [searchParams, nodeMap]);
-
-  useEffect(() => {
     const authorHandle = searchParams.get("a");
     const postID = searchParams.get("p");
     if (authorHandle === null || postID === null) {
@@ -391,6 +322,20 @@ const TreeVisContainer: React.FC<{}> = () => {
             </div>
           </div>
         </main>
+      )}
+      {selectedNode && (
+        <div
+          className="absolute postView z-50"
+          style={{
+            top: `${selectedNode.y - 20}px`,
+            left: `${selectedNode.x + 20}px`,
+          }}
+        >
+          <PostView
+            author_handle={selectedNode.author_handle || ""}
+            text={selectedNode.text || ""}
+          />
+        </div>
       )}
       {!error && (
         <SigmaContainer
