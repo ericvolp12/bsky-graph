@@ -12,7 +12,7 @@ const PostView: FC<PostViewProps> = ({ author_handle, text }) => {
         <h3 className="text-base font-semibold leading-6 text-gray-900">
           {author_handle}
         </h3>
-        <div className="mt-2 max-w-xl text-sm text-gray-500">
+        <div className="mt-2 max-w-sm text-sm text-gray-500 break-words">
           <p>{text}</p>
         </div>
       </div>

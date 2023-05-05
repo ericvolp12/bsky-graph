@@ -98,6 +98,8 @@ const TreeVisContainer: React.FC<{}> = () => {
     null
   );
 
+  const [hardSelected, setHardSelected] = React.useState<boolean>(false);
+
   const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(-1);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
     string[] | null
@@ -165,24 +167,24 @@ const TreeVisContainer: React.FC<{}> = () => {
     useEffect(() => {
       // Register the events
       registerEvents({
-        clickNode: (event: any) => {
-          // const nodeLabel = graph?.getNodeAttribute(event.node, "label");
-          // let newParams: { s?: string; ml?: string } = {
-          //   s: `${nodeLabel}`,
-          // };
-          // setSearchParams(newParams);
+        clickNode: ({ event, node, preventSigmaDefault }: any) => {
+          setHardSelected(true);
         },
         enterNode({ event, node, preventSigmaDefault }: any) {
-          setSelectedNode({
-            key: node,
-            text: graph?.getNodeAttribute(node, "post").text,
-            author_handle: graph?.getNodeAttribute(node, "author_handle"),
-            x: event.x,
-            y: event.y,
-          });
+          if (!hardSelected) {
+            setSelectedNode({
+              key: node,
+              text: graph?.getNodeAttribute(node, "post").text,
+              author_handle: graph?.getNodeAttribute(node, "author_handle"),
+              x: event.x,
+              y: event.y,
+            });
+          }
         },
         leaveNode(event: any) {
-          setSelectedNode(null);
+          if (!hardSelected) {
+            setSelectedNode(null);
+          }
         },
         doubleClickNode: (event: any) => {
           window.open(
@@ -195,7 +197,8 @@ const TreeVisContainer: React.FC<{}> = () => {
         },
         afterRender: () => {},
         clickStage: (_: any) => {
-          // setSearchParams({});
+          setSelectedNode(null);
+          setHardSelected(false);
         },
       });
     }, [registerEvents]);
