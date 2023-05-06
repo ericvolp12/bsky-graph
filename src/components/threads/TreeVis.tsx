@@ -543,15 +543,21 @@ const TreeVisContainer: React.FC<{}> = () => {
                 <div className="col-span-2 mt-auto mb-auto pl-10">
                   <AuthorSearch
                     onLocate={(node) => {
-                      const author = searchParams.get("author") || "";
+                      const author_did = searchParams.get("author_did") || "";
+                      const author_handle =
+                        searchParams.get("author_handle") || "";
                       const post = searchParams.get("post") || "";
                       const attrs = graph?.getNodeAttributes(node);
                       if (attrs !== undefined) {
                         const newParams: any = {
-                          author,
                           post,
                           selectedAuthor: attrs.author_handle,
                         };
+                        if (author_did) {
+                          newParams.author_did = author_did;
+                        } else if (author_handle) {
+                          newParams.author_handle = author_handle;
+                        }
                         setSelectedAuthor(attrs.author_handle);
                         setSearchParams(newParams);
                       }
