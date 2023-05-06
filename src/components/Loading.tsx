@@ -6,7 +6,7 @@ interface LoadingProps {
 
 const Loading: FC<LoadingProps> = ({ message }) => {
   return (
-    <div className="absolute top-0 left-0 w-screen h-screen bg-white z-50">
+    <div className="absolute top-0 left-0 w-screen h-screen bg-white z-10">
       <div className="flex flex-col items-center justify-center h-full">
         <div className="flex flex-col items-center justify-center">
           {/* <img

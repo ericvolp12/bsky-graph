@@ -18,7 +18,13 @@ const PostView: FC<PostViewProps> = ({ node }) => {
             {node.author_handle}
           </a>
         </h3>
-
+        {node.created_at ? (
+          <div className="mt-1 max-w-sm text-xs text-gray-400">
+            {new Date(node.created_at).toLocaleString()}
+          </div>
+        ) : (
+          ""
+        )}
         <div className="mt-1 max-w-sm text-sm text-gray-600 break-words">
           {node.text}
         </div>

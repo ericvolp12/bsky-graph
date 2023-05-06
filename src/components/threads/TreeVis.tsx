@@ -8,7 +8,7 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { MultiDirectedGraph } from "graphology";
 import React, { useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import forceAtlas2 from "graphology-layout-forceatlas2";
@@ -45,7 +45,8 @@ interface Node {
 }
 
 interface SearchParams {
-  author?: string;
+  author_did?: string;
+  author_handle?: string;
   post?: string;
   selectdPost?: string;
   selectedAuthor?: string;
@@ -71,6 +72,7 @@ interface ThreadItem {
 export interface SelectedNode {
   id: string;
   text: string;
+  created_at: string;
   author_handle: string;
   author_did: string;
   has_media: boolean;
@@ -115,9 +117,7 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [selectedAuthor, setSelectedAuthor] = React.useState<string | null>(
     null
   );
-  const previousSelectedAuthor: string | null = usePrevious<string | null>(
-    selectedAuthor
-  );
+
   const [rootNode, setRootNode] = React.useState<string | null>(null);
   const [colorMap, setColorMap] = React.useState<Map<string, string> | null>(
     null
@@ -248,6 +248,7 @@ const TreeVisContainer: React.FC<{}> = () => {
             id: node,
             text: post.text,
             author_handle: graph?.getNodeAttribute(node, "author_handle"),
+            created_at: post.created_at,
             author_did: post.author_did,
             has_media: post.has_embedded_media,
             x: event.x,
@@ -260,6 +261,7 @@ const TreeVisContainer: React.FC<{}> = () => {
             id: node,
             text: post.text,
             author_handle: graph?.getNodeAttribute(node, "author_handle"),
+            created_at: post.created_at,
             author_did: post.author_did,
             has_media: post.has_embedded_media,
             x: event.x,
@@ -314,18 +316,29 @@ const TreeVisContainer: React.FC<{}> = () => {
     return null;
   };
 
-  async function fetchGraph(authorHandle: string, postId: string) {
-    const response = await fetch(
-      `http://10.0.6.32:8080/thread?authorHandle=${authorHandle}&postID=${postId}`
-    );
+  async function fetchGraph(
+    authorDID: string | null,
+    authorHandle: string | null,
+    postId: string
+  ) {
+    let fetchURL = "";
+    if (authorDID !== null) {
+      fetchURL = `https://bsky-search.jazco.io/thread?authorID=${authorDID}&postID=${postId}`;
+    } else if (authorHandle !== null) {
+      fetchURL = `https://bsky-search.jazco.io/thread?authorHandle=${authorHandle}&postID=${postId}`;
+    } else {
+      return;
+    }
+
+    const response = await fetch(fetchURL);
+    const responseJSON = await response.json();
     if (response.status !== 200) {
       console.error("Error fetching thread");
-      setError(`Error fetching thread: ${response.status}`);
+      setError(`Error fetching thread: ${responseJSON?.error || ""}`);
       setHttpStatus(response.status);
       return;
     }
 
-    const responseJSON = await response.json();
     const nodesMap: Map<string, ThreadItem> = new Map();
     const edges: Edge[] = [];
 
@@ -367,7 +380,6 @@ const TreeVisContainer: React.FC<{}> = () => {
     const maxSize = 6;
     const minSize = 1;
 
-    console.log("Adding nodes...");
     for (let i = 0; i < totalNodes; i++) {
       const node = nodes[i];
       // Split node text on a newline every 30 characters
@@ -385,7 +397,6 @@ const TreeVisContainer: React.FC<{}> = () => {
       });
     }
 
-    console.log("Adding edges...");
     for (let i = 0; i < totalEdges; i++) {
       const edge = edges[i];
       if (edge.source === "root") {
@@ -407,30 +418,23 @@ const TreeVisContainer: React.FC<{}> = () => {
   }
 
   useEffect(() => {
-    const authorHandle = searchParams.get("author");
+    const authorHandle = searchParams.get("author_handle");
+    const authorDID = searchParams.get("author_did");
     const postID = searchParams.get("post");
-    if (authorHandle === null || postID === null) {
+    if ((authorHandle === null && authorDID === null) || postID === null) {
+      setError("Please enter a valid Author Handle and Post ID");
       return;
     }
-    // Don't rerender the whole graph if we're just changing the selected author
-    const selectedAuthorFromParams = searchParams.get("selectedAuthor");
-    console.log("Fired");
-
-    if (
-      selectedAuthorFromParams !== null &&
-      (selectedAuthorFromParams === selectedAuthor ||
-        searchParams.get("selectedAuthor") === previousSelectedAuthor)
-    ) {
-      console.log(`Not fetching: ${selectedAuthorFromParams}`);
+    if (!loading) {
       return;
     }
-    fetchGraph(authorHandle, postID);
+    fetchGraph(authorDID, authorHandle, postID);
   }, [searchParams]);
 
   return (
-    <div>
+    <div className="overflow-hidden w-screen h-screen absolute top-0 left-0">
       {error && (
-        <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
+        <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8 z-20">
           <div className="text-center">
             <p className="text-base font-semibold text-indigo-600">
               {httpStatus}
@@ -443,6 +447,14 @@ const TreeVisContainer: React.FC<{}> = () => {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6 text-left">
               <ErrorMsg error={error} />
+            </div>
+            <div className="mt-6">
+              <Link
+                to="/thread"
+                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Search for Another Thread
+              </Link>
             </div>
           </div>
         </main>
@@ -469,7 +481,7 @@ const TreeVisContainer: React.FC<{}> = () => {
           <PostView node={hoveredNode} />
         </div>
       )}
-      {loading && <Loading message="Loading Thread" />}
+      {loading && !error && <Loading message="Loading Thread" />}
       {!error && (
         <SigmaContainer
           graph={MultiDirectedGraph}
@@ -503,8 +515,8 @@ const TreeVisContainer: React.FC<{}> = () => {
           )}
           <ThreadTree />
 
-          <div className="left-1/2 bottom-10 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 fixed">
-            <div className="bg-white shadow sm:rounded-lg pb-1">
+          <div className="left-1/2 bottom-10 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 md:w-fit z-50 fixed">
+            <div className="bg-white shadow sm:rounded-lg py-1">
               <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-2">
                 <div className="flex flex-col items-baseline bg-white text-center">
                   <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
@@ -551,12 +563,18 @@ const TreeVisContainer: React.FC<{}> = () => {
                     type="button"
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     onClick={() => {
-                      const author = searchParams.get("author") || "";
+                      const authorDID = searchParams.get("author_did") || "";
+                      const authorHandle =
+                        searchParams.get("author_handle") || "";
                       const post = searchParams.get("post") || "";
-                      const newParams: any = {
-                        author,
+                      let newParams: any = {
                         post,
                       };
+                      if (authorDID) {
+                        newParams.author_did = authorDID;
+                      } else if (authorHandle) {
+                        newParams.author_handle = authorHandle;
+                      }
                       setSelectedAuthor(null);
                       setSearchParams(newParams);
                     }}
@@ -584,7 +602,9 @@ const TreeVisContainer: React.FC<{}> = () => {
           </span>
           <span className="footer-text text-xs">
             {" | "}
-            {graph
+            {error
+              ? "Failed to Load Thread "
+              : graph
               ? formatDistanceToNow(
                   parseISO(graph?.getAttribute("lastUpdated")),
                   { addSuffix: true }
