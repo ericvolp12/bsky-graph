@@ -54,7 +54,7 @@ function getUniqueKey(): string {
   return Math.random().toString(36).slice(2);
 }
 
-export const CustomSearch: React.FC<SearchControlProps> = ({
+export const AuthorSearch: React.FC<SearchControlProps> = ({
   id,
   className,
   style,
@@ -91,14 +91,20 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
   useEffect(() => {
     const newValues: Array<{ id: string; label: string }> = [];
     if (!selected && search.length > 1) {
+      const authorSet = new Set<string>();
       sigma
         .getGraph()
         .forEachNode((key: string, attributes: Attributes): void => {
           if (
-            attributes.label &&
-            attributes.label.toLowerCase().includes(search.toLowerCase())
+            attributes.author_handle &&
+            attributes.author_handle
+              .toLowerCase()
+              .includes(search.toLowerCase())
           )
-            newValues.push({ id: key, label: attributes.label });
+            if (!authorSet.has(attributes.author_handle)) {
+              authorSet.add(attributes.author_handle);
+              newValues.push({ id: key, label: attributes.author_handle });
+            }
         });
     }
     setValues(newValues);
@@ -131,9 +137,9 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
 
     sigma.getGraph().setNodeAttribute(selected, "highlighted", true);
 
-    const nodeDisplayData = sigma.getNodeDisplayData(selected);
-
     document.getElementById(inputId)?.blur();
+
+    const nodeDisplayData = sigma.getNodeDisplayData(selected);
 
     cameraGoTo({
       x: nodeDisplayData.x,

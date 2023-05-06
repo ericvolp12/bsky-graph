@@ -17,6 +17,8 @@ import iwanthue from "iwanthue";
 import ErrorMsg from "./ErrorMsg";
 import PostView from "./PostView";
 import { Coordinates } from "sigma/types";
+import { AuthorSearch } from "./AuthorSearch";
+import Loading from "../Loading";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -40,6 +42,13 @@ interface Node {
   key: number;
   size: number;
   label: string;
+}
+
+interface SearchParams {
+  author?: string;
+  post?: string;
+  selectdPost?: string;
+  selectedAuthor?: string;
 }
 
 interface Post {
@@ -100,12 +109,19 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [selectedNode, setSelectedNode] = React.useState<SelectedNode | null>(
     null
   );
-
   const [hoveredNode, setHoveredNode] = React.useState<SelectedNode | null>(
     null
   );
-
-  const [hardSelected, setHardSelected] = React.useState<boolean>(false);
+  const [selectedAuthor, setSelectedAuthor] = React.useState<string | null>(
+    null
+  );
+  const previousSelectedAuthor: string | null = usePrevious<string | null>(
+    selectedAuthor
+  );
+  const [rootNode, setRootNode] = React.useState<string | null>(null);
+  const [colorMap, setColorMap] = React.useState<Map<string, string> | null>(
+    null
+  );
 
   const [selectedNodeCount, setSelectedNodeCount] = React.useState<number>(-1);
   const [selectedNodeEdges, setSelectedNodeEdges] = React.useState<
@@ -117,6 +133,7 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [graphShouldUpdate, setGraphShouldUpdate] =
     React.useState<boolean>(true);
   const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   const ThreadTree: React.FC = () => {
     const loadGraph = useLoadGraph();
@@ -142,36 +159,83 @@ const TreeVisContainer: React.FC<{}> = () => {
           clustering: "force-vector",
         });
 
+        const userSet = new Set<string>();
+
         // Assign a random color to each node author by did
-        const colorMap = new Map<string, string>();
+        const newColorMap = new Map<string, string>();
         newGraph?.forEachNode((_, attrs) => {
-          if (!colorMap.has(attrs.post.author_did)) {
-            colorMap.set(
+          if (!newColorMap.has(attrs.post.author_did)) {
+            newColorMap.set(
               attrs.post.author_did,
               palette[Math.floor(Math.random() * 10)]
             );
           }
+          userSet.add(attrs.post.author_did);
         });
 
         // Set the color of each node to the color of its cluster
         newGraph?.updateEachNodeAttributes((_, attr) => {
-          attr.color = colorMap.get(attr.post.author_did);
+          attr.color = newColorMap.get(attr.post.author_did);
           return attr;
         });
 
         setPostCount(newGraph.order);
-        setUserCount(newGraph.size);
+        setUserCount(userSet.size);
 
         newGraph?.forEachNode((_, attr) => {
           attr["old-color"] = attr.color;
         });
 
         setGraph(newGraph);
+        setColorMap(newColorMap);
         loadGraph(newGraph);
+        setLoading(false);
       }
     }, [loadGraph]);
 
     useEffect(() => {
+      const selectedAuthorFromParams = searchParams.get("selectedAuthor");
+      if (selectedAuthorFromParams !== null && selectedAuthor === null) {
+        setSelectedAuthor(selectedAuthorFromParams);
+      }
+    }, [searchParams]);
+
+    useEffect(() => {
+      if (graph === null) {
+        return;
+      }
+      graph.updateEachNodeAttributes((_, attr) => {
+        if (selectedAuthor !== null) {
+          if (attr.author_handle === selectedAuthor) {
+            attr.color =
+              colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
+          } else {
+            attr.color = "rgba(0,0,0,0.1)";
+          }
+        } else {
+          attr.color = colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
+        }
+        return attr;
+      });
+      sigma.refresh();
+    }, [selectedAuthor]);
+
+    useEffect(() => {
+      if (rootNode) {
+        const attrs = graph?.getNodeAttributes(rootNode);
+        if (attrs !== undefined) {
+          const viewportPos = sigma.graphToViewport(attrs as Coordinates);
+          const nodeLabel = document.getElementById("rootNodeLabel");
+          // update position from the viewport
+          if (nodeLabel !== null && attrs !== undefined) {
+            nodeLabel.style.top = `${(
+              viewportPos.y -
+              (attrs.size * 2 + 10)
+            ).toFixed(2)}px`;
+            nodeLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
+          }
+        }
+      }
       // Register the events
       registerEvents({
         clickNode: ({ event, node, preventSigmaDefault }: any) => {
@@ -226,6 +290,19 @@ const TreeVisContainer: React.FC<{}> = () => {
               x: viewportPos.x,
               y: viewportPos.y,
             });
+          }
+          if (rootNode) {
+            const attrs = graph?.getNodeAttributes(rootNode);
+            const viewportPos = sigma.graphToViewport(attrs as Coordinates);
+            const nodeLabel = document.getElementById("rootNodeLabel");
+            // update position from the viewport
+            if (nodeLabel !== null && attrs !== undefined) {
+              nodeLabel.style.top = `${(
+                viewportPos.y -
+                (attrs.size * 2 + 10)
+              ).toFixed(2)}px`;
+              nodeLabel.style.left = `${viewportPos.x.toFixed(2)}px`;
+            }
           }
         },
         clickStage: (_: any) => {
@@ -299,6 +376,7 @@ const TreeVisContainer: React.FC<{}> = () => {
         (maxSize - minSize) * ((maxDepth - node.depth + 1) / maxDepth);
       if (node.depth === 0) {
         size = maxSize + 3;
+        setRootNode(node.post.id);
       }
       graph.addNode(node.post.id, {
         ...node,
@@ -329,9 +407,21 @@ const TreeVisContainer: React.FC<{}> = () => {
   }
 
   useEffect(() => {
-    const authorHandle = searchParams.get("a");
-    const postID = searchParams.get("p");
+    const authorHandle = searchParams.get("author");
+    const postID = searchParams.get("post");
     if (authorHandle === null || postID === null) {
+      return;
+    }
+    // Don't rerender the whole graph if we're just changing the selected author
+    const selectedAuthorFromParams = searchParams.get("selectedAuthor");
+    console.log("Fired");
+
+    if (
+      selectedAuthorFromParams !== null &&
+      (selectedAuthorFromParams === selectedAuthor ||
+        searchParams.get("selectedAuthor") === previousSelectedAuthor)
+    ) {
+      console.log(`Not fetching: ${selectedAuthorFromParams}`);
       return;
     }
     fetchGraph(authorHandle, postID);
@@ -379,6 +469,7 @@ const TreeVisContainer: React.FC<{}> = () => {
           <PostView node={hoveredNode} />
         </div>
       )}
+      {loading && <Loading message="Loading Thread" />}
       {!error && (
         <SigmaContainer
           graph={MultiDirectedGraph}
@@ -394,52 +485,91 @@ const TreeVisContainer: React.FC<{}> = () => {
             zIndex: true,
           }}
         >
+          {rootNode && (
+            <div className="overflow-hidden w-screen h-screen absolute top-0 left-0">
+              <div
+                id="rootNodeLabel"
+                className="clusterLabel absolute md:text-3xl text-xl"
+                style={{
+                  color: "#BC002D",
+                  top: "0px",
+                  left: "0px",
+                  zIndex: 3,
+                }}
+              >
+                Thread Starts Here
+              </div>
+            </div>
+          )}
           <ThreadTree />
 
-          {/* <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
-        <div className="bg-white shadow sm:rounded-lg pb-1">
-          <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
-            <div className="flex flex-col items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Users{" "}
-                <span className="hidden lg:inline-block">Represented</span>
-              </dt>
-              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeCount >= 0
-                  ? selectedNodeCount.toLocaleString()
-                  : postCount.toLocaleString()}
-              </dd>
-            </div>
-            <div className="flex flex-col items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Connections{" "}
-                <span className="hidden lg:inline-block">Represented</span>
-              </dt>
-              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeEdges
-                  ? selectedNodeEdges.length.toLocaleString()
-                  : userCount.toLocaleString()}
-              </dd>
-            </div>
-          </dl>
-          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
-            <div className="col-span-2 mt-auto mb-auto ">
-              <CustomSearch
-                onLocate={(node) => {
-                  const nodeLabel = graph?.getNodeAttribute(node, "label");
-                  let newParams: { s?: string; ml?: string } = {
-                    s: `${nodeLabel}`,
-                  };
-                  setSearchParams(newParams);
-                }}
-              />
+          <div className="left-1/2 bottom-10 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 fixed">
+            <div className="bg-white shadow sm:rounded-lg pb-1">
+              <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-2">
+                <div className="flex flex-col items-baseline bg-white text-center">
+                  <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
+                    Users
+                  </dt>
+                  <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                    {selectedNodeCount >= 0
+                      ? selectedNodeCount.toLocaleString()
+                      : userCount.toLocaleString()}
+                  </dd>
+                </div>
+                <div className="flex flex-col items-baseline bg-white text-center">
+                  <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
+                    Posts{" "}
+                  </dt>
+                  <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                    {selectedNodeEdges
+                      ? selectedNodeEdges.length.toLocaleString()
+                      : postCount.toLocaleString()}
+                  </dd>
+                </div>
+              </dl>
+              <div className="px-2 py-2 sm:p-2 w-full ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
+                <div className="col-span-2 mt-auto mb-auto pl-10">
+                  <AuthorSearch
+                    onLocate={(node) => {
+                      const author = searchParams.get("author") || "";
+                      const post = searchParams.get("post") || "";
+                      const attrs = graph?.getNodeAttributes(node);
+                      if (attrs !== undefined) {
+                        const newParams: any = {
+                          author,
+                          post,
+                          selectedAuthor: attrs.author_handle,
+                        };
+                        setSelectedAuthor(attrs.author_handle);
+                        setSearchParams(newParams);
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-1 mt-auto mb-auto mr-auto pl-4">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
+                    onClick={() => {
+                      const author = searchParams.get("author") || "";
+                      const post = searchParams.get("post") || "";
+                      const newParams: any = {
+                        author,
+                        post,
+                      };
+                      setSelectedAuthor(null);
+                      setSearchParams(newParams);
+                    }}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div> */}
         </SigmaContainer>
       )}
-      <footer className="bg-white absolute bottom-0 text-center w-full z-50">
+      <footer className="bg-white fixed bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
             Built by{" "}
