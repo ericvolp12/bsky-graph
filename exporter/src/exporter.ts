@@ -227,7 +227,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     if (partnerEdge !== undefined) {
       const bothEdgeWeight = edge.weight + partnerEdge.weight;
       const mutualityRatio =
-        edge.weight / bothEdgeWeight + partnerEdge.weight / bothEdgeWeight;
+        (edge.weight / bothEdgeWeight) * (partnerEdge.weight / bothEdgeWeight);
       weight = mutualityRatio * bothEdgeWeight * (1 + Math.log(bothEdgeWeight));
     }
 

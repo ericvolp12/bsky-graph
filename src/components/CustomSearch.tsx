@@ -133,6 +133,8 @@ export const CustomSearch: React.FC<SearchControlProps> = ({
 
     const nodeDisplayData = sigma.getNodeDisplayData(selected);
 
+    document.getElementById(inputId)?.blur();
+
     cameraGoTo({
       x: nodeDisplayData.x,
       y: nodeDisplayData.y,

@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.14",
+    "@heroicons/react": "^2.0.17",
     "@react-sigma/core": "^3.4.0",
     "@react-sigma/layout-forceatlas2": "^3.4.0",
+    "@tailwindcss/forms": "^0.5.3",
     "@types/lodash": "^4.14.194",
     "date-fns": "^2.29.3",
     "graphology": "^0.25.1",

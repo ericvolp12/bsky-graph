@@ -14,6 +14,7 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { CustomSearch } from "./CustomSearch";
 import iwanthue from "iwanthue";
+import Loading from "./Loading";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -137,6 +138,7 @@ const GraphContainer: React.FC<{}> = () => {
   const [graph, setGraph] = React.useState<MultiDirectedGraph | null>(null);
   const [graphShouldUpdate, setGraphShouldUpdate] =
     React.useState<boolean>(true);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   // Moot List State
   const [mootList, setMootList] = React.useState<MootNode[]>([]);
@@ -238,6 +240,7 @@ const GraphContainer: React.FC<{}> = () => {
         setClusters(newClusters);
         setGraph(newGraph);
         loadGraph(newGraph);
+        setLoading(false);
       }
     }, [loadGraph]);
 
@@ -459,222 +462,224 @@ const GraphContainer: React.FC<{}> = () => {
   }, []);
 
   return (
-    <SigmaContainer
-      graph={MultiDirectedGraph}
-      style={{ height: "100vh" }}
-      settings={{
-        nodeProgramClasses: { image: getNodeProgramImage() },
-        defaultNodeType: "image",
-        defaultEdgeType: "arrow",
-        labelDensity: 0.07,
-        labelGridCellSize: 60,
-        labelRenderedSizeThreshold: 5,
-        labelFont: "Lato, sans-serif",
-        zIndex: true,
-      }}
-    >
-      {selectedNode !== null && mootList.length > 0 && (
-        <div className="overflow-hidden bg-white shadow sm:rounded-md absolute left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto z-50">
-          <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
-            <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-              <div className="ml-4 mt-2">
-                <h3 className="text-base font-semibold leading-6 text-gray-900">
-                  Moot List
-                </h3>
+    <div className="overflow-hidden">
+      {loading && <Loading message="Loading Graph" />}
+      <SigmaContainer
+        graph={MultiDirectedGraph}
+        style={{ height: "100vh" }}
+        settings={{
+          nodeProgramClasses: { image: getNodeProgramImage() },
+          defaultNodeType: "image",
+          defaultEdgeType: "arrow",
+          labelDensity: 0.07,
+          labelGridCellSize: 60,
+          labelRenderedSizeThreshold: 5,
+          labelFont: "Lato, sans-serif",
+          zIndex: true,
+        }}
+      >
+        {selectedNode !== null && mootList.length > 0 && (
+          <div className="overflow-hidden bg-white shadow sm:rounded-md absolute left-1/2 top-5 transform -translate-x-1/2 w-5/6 lg:tall:w-fit lg:tall:left-12 lg:tall:translate-x-0 lg:tall:mt-auto lg:tall-mb:auto z-50">
+            <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+              <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+                <div className="ml-4 mt-2">
+                  <h3 className="text-base font-semibold leading-6 text-gray-900">
+                    Moot List
+                  </h3>
+                </div>
+                <div className="ml-4 mt-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMootList(!showMootList);
+                      let newParams: { s?: string; ml?: string } = {
+                        s: `${graph?.getNodeAttribute(selectedNode, "label")}`,
+                      };
+                      if (!showMootList) {
+                        newParams.ml = `${!showMootList}`;
+                      }
+                      setSearchParams(newParams);
+                    }}
+                    className={
+                      `relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
+                      (showMootList
+                        ? " bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+                        : " bg-green-500 hover:bg-green-600 focus-visible:ring-green-500")
+                    }
+                  >
+                    {showMootList ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
-              <div className="ml-4 mt-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMootList(!showMootList);
+              <div className="mt-2 max-w-xl text-sm text-gray-500">
+                <p>
+                  These are the top 10 moots that{" "}
+                  <a
+                    className="font-bold underline-offset-1 underline break-all"
+                    href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
+                      selectedNode,
+                      "label"
+                    )}`}
+                    target="_blank"
+                  >
+                    {graph?.getNodeAttribute(selectedNode, "label")}
+                  </a>{" "}
+                  has interacted with.
+                </p>
+              </div>
+            </div>
+            <ul
+              role="list"
+              className="divide-y divide-gray-200 max-h-96 md:max-h-screen overflow-scroll"
+            >
+              {showMootList &&
+                mootList.slice(0, 10).map((moot) => (
+                  <li key={moot.node} className="px-4 py-3 sm:px-6">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        <a
+                          href={`https://staging.bsky.app/profile/${moot.label}`}
+                          target="_blank"
+                        >
+                          {moot.label}
+                        </a>
+                      </div>
+                      <div className="ml-2 flex-shrink-0 flex">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          {moot.weight}
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+        <div className="overflow-hidden w-screen h-screen absolute top-0 left-0">
+          {clusters.map((cluster) => {
+            if (cluster.label !== undefined) {
+              return (
+                <div
+                  key={cluster.idx}
+                  id={`cluster-${cluster.idx}`}
+                  hidden={!showClusterLabels}
+                  className="clusterLabel absolute md:text-3xl text-xl"
+                  style={{
+                    color: `${cluster.color}`,
+                    top: `${cluster.y}px`,
+                    left: `${cluster.x}px`,
+                    zIndex: 3,
+                  }}
+                >
+                  {cluster.label}
+                </div>
+              );
+            }
+          })}
+        </div>
+        <SocialGraph />
+        <div className="left-1/2 bottom-10 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 fixed">
+          <div className="bg-white shadow sm:rounded-lg py-1">
+            <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
+              <div className="flex flex-col items-baseline bg-white text-center">
+                <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
+                  Users{" "}
+                  <span className="hidden lg:inline-block">Represented</span>
+                </dt>
+                <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                  {selectedNodeCount >= 0
+                    ? selectedNodeCount.toLocaleString()
+                    : userCount.toLocaleString()}
+                </dd>
+              </div>
+              <div className="flex flex-col items-baseline bg-white text-center">
+                <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
+                  Connections{" "}
+                  <span className="hidden lg:inline-block">Represented</span>
+                </dt>
+                <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                  {selectedNodeEdges
+                    ? selectedNodeEdges.length.toLocaleString()
+                    : edgeCount.toLocaleString()}
+                </dd>
+              </div>
+              <div className="flex flex-col items-baseline bg-white text-center">
+                <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4 px-4">
+                  Interactions{" "}
+                  <span className="hidden lg:inline-block">Represented</span>
+                </dt>
+                <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
+                  {inWeight >= 0 && outWeight >= 0
+                    ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
+                    : totalWeight.toLocaleString()}
+                </dd>
+              </div>
+            </dl>
+            <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
+              <div className="col-span-2 mt-auto mb-auto ">
+                <CustomSearch
+                  onLocate={(node) => {
+                    const nodeLabel = graph?.getNodeAttribute(node, "label");
                     let newParams: { s?: string; ml?: string } = {
-                      s: `${graph?.getNodeAttribute(selectedNode, "label")}`,
+                      s: `${nodeLabel}`,
                     };
-                    if (!showMootList) {
-                      newParams.ml = `${!showMootList}`;
+                    if (showMootList) {
+                      newParams.ml = `${showMootList}`;
                     }
                     setSearchParams(newParams);
                   }}
-                  className={
-                    `relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
-                    (showMootList
-                      ? " bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
-                      : " bg-green-500 hover:bg-green-600 focus-visible:ring-green-500")
-                  }
-                >
-                  {showMootList ? "Hide" : "Show"}
-                </button>
+                />
               </div>
-            </div>
-            <div className="mt-2 max-w-xl text-sm text-gray-500">
-              <p>
-                These are the top 10 moots that{" "}
-                <a
-                  className="font-bold underline-offset-1 underline break-all"
-                  href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
-                    selectedNode,
-                    "label"
-                  )}`}
-                  target="_blank"
-                >
-                  {graph?.getNodeAttribute(selectedNode, "label")}
-                </a>{" "}
-                has interacted with.
-              </p>
-            </div>
-          </div>
-          <ul
-            role="list"
-            className="divide-y divide-gray-200 max-h-96 md:max-h-screen overflow-scroll"
-          >
-            {showMootList &&
-              mootList.slice(0, 10).map((moot) => (
-                <li key={moot.node} className="px-4 py-3 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      <a
-                        href={`https://staging.bsky.app/profile/${moot.label}`}
-                        target="_blank"
-                      >
-                        {moot.label}
-                      </a>
-                    </div>
-                    <div className="ml-2 flex-shrink-0 flex">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        {moot.weight}
-                      </span>
-                    </div>
+              <div className="relative flex gap-x-3 ml-4 w-full flex-col">
+                <div className="flex flex-row">
+                  <div className="flex h-6 items-center mt-auto mb-auto">
+                    <input
+                      id="neighbors"
+                      name="neighbors"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      checked={showSecondDegreeNeighbors}
+                      onChange={() =>
+                        setShowSecondDegreeNeighbors(!showSecondDegreeNeighbors)
+                      }
+                    />
                   </div>
-                </li>
-              ))}
-          </ul>
-        </div>
-      )}
-      <div className="overflow-hidden w-screen h-screen top-0 left-0">
-        {clusters.map((cluster) => {
-          if (cluster.label !== undefined) {
-            return (
-              <div
-                key={cluster.idx}
-                id={`cluster-${cluster.idx}`}
-                hidden={!showClusterLabels}
-                className="clusterLabel absolute md:text-3xl text-xl"
-                style={{
-                  color: `${cluster.color}`,
-                  top: `${cluster.y}px`,
-                  left: `${cluster.x}px`,
-                  zIndex: 3,
-                }}
-              >
-                {cluster.label}
-              </div>
-            );
-          }
-        })}
-      </div>
-      <SocialGraph />
-
-      <div className="left-1/2 bottom-8 lg:tall:bottom-20 transform -translate-x-1/2 w-5/6 lg:w-fit z-50 absolute">
-        <div className="bg-white shadow sm:rounded-lg pb-1">
-          <dl className="mx-auto grid gap-px bg-gray-900/5 grid-cols-3">
-            <div className="flex flex-col items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Users{" "}
-                <span className="hidden lg:inline-block">Represented</span>
-              </dt>
-              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeCount >= 0
-                  ? selectedNodeCount.toLocaleString()
-                  : userCount.toLocaleString()}
-              </dd>
-            </div>
-            <div className="flex flex-col items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4">
-                Connections{" "}
-                <span className="hidden lg:inline-block">Represented</span>
-              </dt>
-              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {selectedNodeEdges
-                  ? selectedNodeEdges.length.toLocaleString()
-                  : edgeCount.toLocaleString()}
-              </dd>
-            </div>
-            <div className="flex flex-col items-baseline bg-white text-center">
-              <dt className="text-sm font-medium leading-6 text-gray-500 ml-auto mr-auto mt-4 px-4">
-                Interactions{" "}
-                <span className="hidden lg:inline-block">Represented</span>
-              </dt>
-              <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
-                {inWeight >= 0 && outWeight >= 0
-                  ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
-                  : totalWeight.toLocaleString()}
-              </dd>
-            </div>
-          </dl>
-          <div className="px-2 py-2 sm:p-2 w-fit ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
-            <div className="col-span-2 mt-auto mb-auto ">
-              <CustomSearch
-                onLocate={(node) => {
-                  const nodeLabel = graph?.getNodeAttribute(node, "label");
-                  let newParams: { s?: string; ml?: string } = {
-                    s: `${nodeLabel}`,
-                  };
-                  if (showMootList) {
-                    newParams.ml = `${showMootList}`;
-                  }
-                  setSearchParams(newParams);
-                }}
-              />
-            </div>
-            <div className="relative flex gap-x-3 ml-4 w-full flex-col">
-              <div className="flex flex-row">
-                <div className="flex h-6 items-center mt-auto mb-auto">
-                  <input
-                    id="neighbors"
-                    name="neighbors"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    checked={showSecondDegreeNeighbors}
-                    onChange={() =>
-                      setShowSecondDegreeNeighbors(!showSecondDegreeNeighbors)
-                    }
-                  />
+                  <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
+                    <label
+                      htmlFor="neighbors"
+                      className="font-medium text-gray-900"
+                    >
+                      2°<span className="hidden md:inline"> Neighbors</span>
+                      <span className="md:hidden">Neigh...</span>
+                    </label>
+                  </div>
                 </div>
-                <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
-                  <label
-                    htmlFor="neighbors"
-                    className="font-medium text-gray-900"
-                  >
-                    2°<span className="hidden md:inline"> Neighbors</span>
-                    <span className="md:hidden">Neigh...</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex flex-row">
-                <div className="flex h-6 items-center">
-                  <input
-                    id="clusterLabels"
-                    name="clusterLabels"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    checked={showClusterLabels}
-                    onChange={() => setShowClusterLabels(!showClusterLabels)}
-                  />
-                </div>
-                <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
-                  <label
-                    htmlFor="clusterLabels"
-                    className="font-medium text-gray-900"
-                  >
-                    <span className="hidden md:inline">Cluster </span>Labels
-                  </label>
+                <div className="flex flex-row">
+                  <div className="flex h-6 items-center">
+                    <input
+                      id="clusterLabels"
+                      name="clusterLabels"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      checked={showClusterLabels}
+                      onChange={() => setShowClusterLabels(!showClusterLabels)}
+                    />
+                  </div>
+                  <div className="flex md:text-sm text-xs leading-6 pl-1 md:pl-3 mb-auto mt-auto">
+                    <label
+                      htmlFor="clusterLabels"
+                      className="font-medium text-gray-900"
+                    >
+                      <span className="hidden md:inline">Cluster </span>Labels
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <footer className="bg-white absolute bottom-0 text-center w-full z-50">
+      </SigmaContainer>
+      <footer className="bg-white fixed bottom-0 text-center w-full z-50">
         <div className="mx-auto max-w-7xl px-2">
           <span className="footer-text text-xs">
             Built by{" "}
@@ -709,7 +714,7 @@ const GraphContainer: React.FC<{}> = () => {
           </span>
         </div>
       </footer>
-    </SigmaContainer>
+    </div>
   );
 };
 
