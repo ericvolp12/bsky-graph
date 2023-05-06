@@ -65,8 +65,12 @@ clusterRepresentatives.set("vedat.bsky.social", {
   prio: 4,
 });
 clusterRepresentatives.set("awhurst.bsky.social", { label: "Web3", prio: 4 });
-clusterRepresentatives.set("wesbos.com", {
-  label: "Front-end Developers",
+// clusterRepresentatives.set("wesbos.com", {
+//   label: "Front-end Developers",
+//   prio: 3,
+// });
+clusterRepresentatives.set("faineg.bsky.social", {
+  label: "Alf Minicluster",
   prio: 3,
 });
 clusterRepresentatives.set("pfrazee.com", {
@@ -309,7 +313,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.01,
+    resolution: 1.0,
   });
   log("Done assigning community partitions");
 
