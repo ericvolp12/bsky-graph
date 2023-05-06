@@ -153,7 +153,7 @@ const TreeVisContainer: React.FC<{}> = () => {
         const newNodeMap = constructNodeMap(newGraph);
         setNodeMap(newNodeMap);
 
-        const palette = iwanthue(10, {
+        const palette = iwanthue(30, {
           seed: "bskyThreadTree",
           colorSpace: "intense",
           clustering: "force-vector",
@@ -167,7 +167,7 @@ const TreeVisContainer: React.FC<{}> = () => {
           if (!newColorMap.has(attrs.post.author_did)) {
             newColorMap.set(
               attrs.post.author_did,
-              palette[Math.floor(Math.random() * 10)]
+              palette[Math.floor(Math.random() * 30)]
             );
           }
           userSet.add(attrs.post.author_did);
