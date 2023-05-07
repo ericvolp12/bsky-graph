@@ -81,10 +81,10 @@ clusterRepresentatives.set("lookitup.baby", {
   label: "Goose Metacluster",
   prio: 4,
 });
-// clusterRepresentatives.set("johnmichiemusic.com", {
-//   label: "Musicians",
-//   prio: 2,
-// });
+clusterRepresentatives.set("johnmichiemusic.com", {
+  label: "Musician + Wrestling Subcluster",
+  prio: 2,
+});
 
 clusterRepresentatives.set("amynemmity.bsky.social", {
   label: "Wrestling Subcluster",
