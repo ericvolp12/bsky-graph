@@ -11,14 +11,12 @@ import React, { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
-import forceAtlas2 from "graphology-layout-forceatlas2";
-import circular from "graphology-layout/circular";
 import iwanthue from "iwanthue";
+import { Coordinates } from "sigma/types";
+import Loading from "../Loading";
+import { AuthorSearch } from "./AuthorSearch";
 import ErrorMsg from "./ErrorMsg";
 import PostView from "./PostView";
-import { Coordinates } from "sigma/types";
-import { AuthorSearch } from "./AuthorSearch";
-import Loading from "../Loading";
 
 // Hook
 function usePrevious<T>(value: T): T {
@@ -323,9 +321,9 @@ const TreeVisContainer: React.FC<{}> = () => {
   ) {
     let fetchURL = "";
     if (authorDID !== null) {
-      fetchURL = `https://bsky-search.jazco.io/thread?authorID=${authorDID}&postID=${postId}`;
+      fetchURL = `https://bsky-search.jazco.io/thread?authorID=${authorDID}&postID=${postId}&layout=true`;
     } else if (authorHandle !== null) {
-      fetchURL = `https://bsky-search.jazco.io/thread?authorHandle=${authorHandle}&postID=${postId}`;
+      fetchURL = `https://bsky-search.jazco.io/thread?authorHandle=${authorHandle}&postID=${postId}&layout=true`;
     } else {
       return;
     }
@@ -404,13 +402,6 @@ const TreeVisContainer: React.FC<{}> = () => {
       }
       graph.addEdge(edge.source, edge.target);
     }
-
-    circular.assign(graph);
-    const settings = forceAtlas2.inferSettings(graph);
-    const iterationCount = 600;
-    console.log(`Running ${iterationCount} Force Atlas simulations...`);
-    forceAtlas2.assign(graph, { settings, iterations: iterationCount });
-    console.log("Done running Force Atlas");
 
     graph.setAttribute("lastUpdated", new Date().toISOString());
 
