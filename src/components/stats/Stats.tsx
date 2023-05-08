@@ -64,7 +64,7 @@ const Stats: FC<{}> = () => {
                         Total Authors
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.total_authors}
+                        {stats.total_authors.toLocaleString()}
                       </dd>
                     </div>
                   )}
