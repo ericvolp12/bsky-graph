@@ -3,6 +3,7 @@ import "./App.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import TreeVisContainer from "./components/threads/TreeVis";
 import ThreadSearch from "./components/threads/ThreadSearch";
+import Stats from "./components/stats/Stats";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/thread/view",
     element: <TreeVisContainer />,
+  },
+  {
+    path: "/stats",
+    element: <Stats />,
   },
 ]);
 
