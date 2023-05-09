@@ -28,6 +28,10 @@ const Stats: FC<{}> = () => {
     fetch("https://bsky-search.jazco.io/stats")
       .then((res) => res.json())
       .then((res: AuthorStatsResponse) => {
+        // If the response has an updated_at from the future, set it to a second ago
+        if (res.updated_at > new Date().toISOString()) {
+          res.updated_at = new Date(Date.now() - 1000).toISOString();
+        }
         setStats(res);
       })
       .catch((err) => {
