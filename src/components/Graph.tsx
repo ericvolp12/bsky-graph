@@ -531,7 +531,7 @@ const GraphContainer: React.FC<{}> = () => {
             </div>
             <ul
               role="list"
-              className="divide-y divide-gray-200 max-h-96 md:max-h-screen overflow-scroll"
+              className="divide-y divide-gray-200 max-h-96 md:max-h-screen overflow-auto"
             >
               {showMootList &&
                 mootList.slice(0, 10).map((moot) => (
