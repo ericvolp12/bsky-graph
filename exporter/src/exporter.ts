@@ -86,13 +86,13 @@ clusterRepresentatives.set("nori.gay", {
   prio: 4,
 });
 
-// clusterRepresentatives.set("johnmichiemusic.com", {
-//   label: "Musician + Wrestling Subcluster",
-//   prio: 2,
-// });
-
-clusterRepresentatives.set("amynemmity.bsky.social", {
+clusterRepresentatives.set("andy.wrestlejoy.com", {
   label: "Wrestling Subcluster",
+  prio: 3,
+});
+
+clusterRepresentatives.set("johnmichiemusic.com", {
+  label: "Musician Subcluster",
   prio: 3,
 });
 
@@ -135,13 +135,17 @@ async function fetchGraph() {
     const parsedWeight = parseInt(weight);
     if (parsedWeight > 1 && source !== target) {
       const sourceNode = { did: source, handle: sourceHandle };
-      if (!nodesMap.has(source)) {
+      if (!nodesMap.has(source) && source !== "" && sourceHandle !== "") {
         nodesMap.set(source, sourceNode);
+      } else if (source === "" || sourceHandle === "") {
+        return;
       }
 
       const targetNode = { did: target, handle: targetHandle };
-      if (!nodesMap.has(target)) {
+      if (!nodesMap.has(target) && target !== "" && targetHandle !== "") {
         nodesMap.set(target, targetNode);
+      } else if (target === "" || targetHandle === "") {
+        return;
       }
 
       edges.push({
