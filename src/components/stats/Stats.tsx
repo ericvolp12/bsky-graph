@@ -116,7 +116,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   </div>
                   <div className="lg:mt-8 mt-2">
-                    <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-5">
+                    <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6">
                       {stats &&
                         stats.brackets.map((b, idx) => (
                           <div
