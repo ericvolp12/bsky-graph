@@ -208,26 +208,7 @@ const TreeVisContainer: React.FC<{}> = () => {
       if (graph === null) {
         return;
       }
-      graph.updateEachNodeAttributes((_, attr) => {
-        if (selectedAuthor !== null) {
-          if (attr.author_handle === selectedAuthor) {
-            attr.color =
-              colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
-          } else {
-            attr.color = "rgba(0,0,0,0.1)";
-          }
-        } else {
-          attr.color = colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
-        }
-        return attr;
-      });
-      sigma.refresh();
-    }, [selectedAuthor]);
 
-    useEffect(() => {
-      if (graph === null) {
-        return;
-      }
       // When ModMode is selected, color the nodes based on sentiment
       graph.updateEachNodeAttributes((_, attr) => {
         if (modMode) {
@@ -249,13 +230,20 @@ const TreeVisContainer: React.FC<{}> = () => {
               attr.color = `rgba(255,0,0,${intensity})`;
             }
           }
+        } else if (selectedAuthor !== null) {
+          if (attr.author_handle === selectedAuthor) {
+            attr.color =
+              colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
+          } else {
+            attr.color = "rgba(0,0,0,0.1)";
+          }
         } else {
           attr.color = colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
         }
         return attr;
       });
       sigma.refresh();
-    }, [modMode]);
+    }, [modMode, selectedAuthor]);
 
     useEffect(() => {
       if (rootNode) {
