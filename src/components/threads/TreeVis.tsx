@@ -137,6 +137,8 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [nodeMap, setNodeMap] = React.useState<Map<string, Node>>(new Map());
   const [loading, setLoading] = React.useState<boolean>(true);
 
+  const [modMode, setModMode] = React.useState<boolean>(false);
+
   const ThreadTree: React.FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
@@ -221,6 +223,39 @@ const TreeVisContainer: React.FC<{}> = () => {
       });
       sigma.refresh();
     }, [selectedAuthor]);
+
+    useEffect(() => {
+      if (graph === null) {
+        return;
+      }
+      // When ModMode is selected, color the nodes based on sentiment
+      graph.updateEachNodeAttributes((_, attr) => {
+        if (modMode) {
+          attr.color = "rgba(0,0,0,0.1)";
+          if (attr.post.sentiment && attr.post.sentiment_confidence) {
+            if (
+              attr.post.sentiment.includes("p") &&
+              attr.post.sentiment_confidence > 0.65
+            ) {
+              // Set intensity to the confidence rounded to 2 decimal places
+              const intensity = attr.post.sentiment_confidence.toLocaleString();
+              attr.color = `rgba(0,255,0,${intensity})`;
+            } else if (
+              attr.post.sentiment.includes("n") &&
+              attr.post.sentiment_confidence > 0.65
+            ) {
+              // Set intensity to the confidence rounded to 2 decimal places
+              const intensity = attr.post.sentiment_confidence.toLocaleString();
+              attr.color = `rgba(255,0,0,${intensity})`;
+            }
+          }
+        } else {
+          attr.color = colorMap?.get(attr.post.author_did) || "rgba(0,0,0,0.1)";
+        }
+        return attr;
+      });
+      sigma.refresh();
+    }, [modMode]);
 
     useEffect(() => {
       if (rootNode) {
@@ -538,8 +573,8 @@ const TreeVisContainer: React.FC<{}> = () => {
                   </dd>
                 </div>
               </dl>
-              <div className="px-2 py-2 sm:p-2 w-full ml-auto mr-auto mt-2 grid grid-flow-row-dense grid-cols-3 ">
-                <div className="col-span-2 mt-auto mb-auto pl-10">
+              <div className="px-2 py-2 sm:p-2 w-full ml-auto mr-auto mt-2 grid grid-flow-row-dense md:grid-cols-4 grid-cols-2 gap-y-4">
+                <div className="col-span-2 mt-auto mb-auto pl-2">
                   <AuthorSearch
                     onLocate={(node) => {
                       const author_did = searchParams.get("author_did") || "";
@@ -586,6 +621,24 @@ const TreeVisContainer: React.FC<{}> = () => {
                   >
                     Reset
                   </button>
+                </div>
+                <div className="col-span-1 mt-auto mb-auto pr-3">
+                  <div className="flex items-center">
+                    <input
+                      id="moderatorMode"
+                      name="moderatorMode"
+                      type="checkbox"
+                      checked={modMode}
+                      onChange={(e) => setModMode(e.target.checked)}
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="moderatorMode"
+                      className="ml-2 flex text-sm text-gray-900 break-words"
+                    >
+                      Mod Vision
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
