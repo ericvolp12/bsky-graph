@@ -58,6 +58,8 @@ interface Post {
   author_did: string;
   created_at: string;
   has_embedded_media: boolean;
+  sentiment?: string;
+  sentiment_confidence?: number;
 }
 
 interface ThreadItem {
@@ -74,6 +76,8 @@ export interface SelectedNode {
   author_handle: string;
   author_did: string;
   has_media: boolean;
+  sentiment?: string;
+  sentiment_confidence?: number;
   x: number;
   y: number;
 }
@@ -249,6 +253,8 @@ const TreeVisContainer: React.FC<{}> = () => {
             created_at: post.created_at,
             author_did: post.author_did,
             has_media: post.has_embedded_media,
+            sentiment: post?.sentiment,
+            sentiment_confidence: post?.sentiment_confidence,
             x: event.x,
             y: event.y,
           });
@@ -262,6 +268,8 @@ const TreeVisContainer: React.FC<{}> = () => {
             created_at: post.created_at,
             author_did: post.author_did,
             has_media: post.has_embedded_media,
+            sentiment: post?.sentiment,
+            sentiment_confidence: post?.sentiment_confidence,
             x: event.x,
             y: event.y,
           });
