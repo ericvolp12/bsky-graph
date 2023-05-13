@@ -14,6 +14,7 @@ interface Bracket {
 
 interface AuthorStatsResponse {
   total_authors: number;
+  total_users: number;
   mean_post_count: number;
   percentiles: Percentile[];
   brackets: Bracket[];
@@ -63,9 +64,19 @@ const Stats: FC<{}> = () => {
                 </div>
                 <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6 max-w-lg mx-auto">
                   {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-3">
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
                       <dt className="text-base leading-7 text-gray-600">
-                        Total Authors
+                        Users
+                      </dt>
+                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                        {stats.total_users.toLocaleString()}
+                      </dd>
+                    </div>
+                  )}
+                  {stats && (
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
+                      <dt className="text-base leading-7 text-gray-600">
+                        Post Authors
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
                         {stats.total_authors.toLocaleString()}
@@ -73,7 +84,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   )}
                   {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-3">
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
                       <dt className="text-base leading-7 text-gray-600">
                         Mean Post Count
                       </dt>
