@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ErrorMsg from "./ErrorMsg";
 
@@ -6,6 +6,12 @@ const ThreadSearch: React.FC<{}> = () => {
   const [threadURL, setThreadURL] = React.useState<string>("");
   const [error, setError] = React.useState<string>("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title =
+      "BlueSky Thread Visualizer Search by Jaz (jaz.bsky.social)";
+  }, []);
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">

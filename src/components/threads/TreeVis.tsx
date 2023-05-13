@@ -139,6 +139,10 @@ const TreeVisContainer: React.FC<{}> = () => {
 
   const [modMode, setModMode] = React.useState<boolean>(false);
 
+  useEffect(() => {
+    document.title = "BlueSky Thread Visualizer by Jaz (jaz.bsky.social)";
+  }, []);
+
   const ThreadTree: React.FC = () => {
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();

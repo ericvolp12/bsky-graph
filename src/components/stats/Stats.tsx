@@ -26,6 +26,10 @@ const Stats: FC<{}> = () => {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
+    document.title = "BlueSky Stats by Jaz (jaz.bsky.social)";
+  }, []);
+
+  useEffect(() => {
     fetch("https://bsky-search.jazco.io/stats")
       .then((res) => res.json())
       .then((res: AuthorStatsResponse) => {

@@ -106,6 +106,16 @@ clusterRepresentatives.set("junlper.bsky.social", {
 });
 // clusterRepresentatives.set("itguyry.com", "BIPOC in Tech");
 
+clusterRepresentatives.set("yap.zone", {
+  label: "Furries",
+  prio: 3,
+});
+
+clusterRepresentatives.set("maureenbug.bsky.social", {
+  label: "Squid Cluster",
+  prio: 3,
+});
+
 const filteredHandles = ["mattyglesias.bsky.social"];
 
 // log logs a message with a timestamp in human-readale format
@@ -235,9 +245,10 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     const partnerEdge = edgeMap.get(`${edge.target}-${edge.source}`);
     if (partnerEdge !== undefined) {
       const bothEdgeWeight = edge.weight + partnerEdge.weight;
-      const mutualityRatio =
+      const mutualityFactor =
         (edge.weight / bothEdgeWeight) * (partnerEdge.weight / bothEdgeWeight);
-      weight = mutualityRatio * bothEdgeWeight * (1 + Math.log(bothEdgeWeight));
+      weight =
+        mutualityFactor * bothEdgeWeight * (1 + Math.log(bothEdgeWeight));
     }
 
     // Calculate the size based on the logarithm of the edge weight relative to the range of weights
@@ -322,7 +333,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.0,
+    resolution: 1.1,
   });
   log("Done assigning community partitions");
 
