@@ -26,7 +26,7 @@ const Stats: FC<{}> = () => {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    document.title = "BlueSky Stats by Jaz (jaz.bsky.social)";
+    document.title = "Stats for BlueSky by Jaz (jaz.bsky.social)";
   }, []);
 
   useEffect(() => {

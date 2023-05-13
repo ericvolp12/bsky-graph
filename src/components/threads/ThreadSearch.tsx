@@ -9,7 +9,7 @@ const ThreadSearch: React.FC<{}> = () => {
 
   useEffect(() => {
     document.title =
-      "BlueSky Thread Visualizer Search by Jaz (jaz.bsky.social)";
+      "Thread Visualizer Search for BlueSky by Jaz (jaz.bsky.social)";
   }, []);
 
   return (
