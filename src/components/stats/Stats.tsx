@@ -12,6 +12,12 @@ interface Bracket {
   count: number;
 }
 
+interface TopPoster {
+  handle: string;
+  did: string;
+  post_count: number;
+}
+
 interface AuthorStatsResponse {
   total_authors: number;
   total_users: number;
@@ -19,11 +25,20 @@ interface AuthorStatsResponse {
   percentiles: Percentile[];
   brackets: Bracket[];
   updated_at: string;
+  top_posters: TopPoster[];
 }
+
+const badgeClasses = [
+  "bg-yellow-200 text-yellow-900",
+  "bg-slate-200 text-slate-800",
+  "bg-orange-200 text-orange-800",
+  "bg-emerald-50 text-emerald-800",
+];
 
 const Stats: FC<{}> = () => {
   const [stats, setStats] = useState<AuthorStatsResponse | null>(null);
   const [error, setError] = useState<string>("");
+  const [showTopPosters, setShowTopPosters] = useState<boolean>(false);
 
   useEffect(() => {
     document.title = "Stats for BlueSky by Jaz (jaz.bsky.social)";
@@ -148,6 +163,85 @@ const Stats: FC<{}> = () => {
                         ))}
                     </dl>
                   </div>
+                </div>
+
+                <div className="py-8 mt-2 text-center flex mx-auto flex-col w-fit">
+                  <div className="flex justify-center align-middle">
+                    <span className="ml-2 text-xl font-semibold text-gray-900">
+                      Top 25 Poasters
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowTopPosters(!showTopPosters);
+                      }}
+                      className={
+                        `ml-2 mr-6 relative inline-flex items-center rounded-md  px-3 py-2 text-xs font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` +
+                        (showTopPosters
+                          ? " bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+                          : " bg-green-500 hover:bg-green-600 focus-visible:ring-green-500")
+                      }
+                    >
+                      {showTopPosters ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {stats && showTopPosters && (
+                    <div className="flex-shrink">
+                      <ul
+                        role="list"
+                        className="divide-y divide-gray-200 overflow-auto flex-shrink"
+                      >
+                        {stats.top_posters.map((poster, idx) => (
+                          <li
+                            key={poster.did}
+                            className="px-4 py-3 sm:px-6 flex-shrink"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-gray-900 truncate">
+                                {idx + 1}.
+                              </div>
+                              <div className="text-sm font-medium text-gray-900 truncate px-4">
+                                <a
+                                  href={`https://staging.bsky.app/profile/${poster.handle}`}
+                                  target="_blank"
+                                >
+                                  {poster.handle}
+                                </a>
+                              </div>
+                              <div className="ml-2 flex-shrink-0 flex">
+                                <span
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    badgeClasses[
+                                      idx < badgeClasses.length
+                                        ? idx
+                                        : badgeClasses.length - 1
+                                    ]
+                                  }`}
+                                >
+                                  {poster.post_count.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="text-center mb-4">
+              <div className="mx-auto max-w-7xl px-6 lg:px-8 space-y-2">
+                <div className="text-gray-500 text-xs">
+                  Post Data Collection started May 1st, 2023
+                </div>
+                <div className="text-gray-500 text-xs">
+                  Total User Count is directly from the BlueSky API
+                </div>
+                <div className="text-gray-500 text-xs">
+                  Large bot accounts are excluded from statistics and Top
+                  Posters
                 </div>
               </div>
             </div>
