@@ -263,7 +263,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       {
         ogWeight: edge.weight,
         weight: parseFloat(weight.toFixed(2)),
-        size: parseFloat(size.toFixed(1)),
+        size: parseFloat(size.toFixed(2)),
       }
     );
   }
@@ -333,7 +333,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.05,
+    resolution: 1.01,
   });
   log("Done assigning community partitions");
 
@@ -404,7 +404,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
           (acc, p) => acc + p.x,
           0
         ) / communityClusters[community].positions.length
-      ).toFixed(1)
+      ).toFixed(2)
     );
     communityClusters[community].y = parseFloat(
       (
@@ -412,7 +412,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
           (acc, p) => acc + p.y,
           0
         ) / communityClusters[community].positions.length
-      ).toFixed(1)
+      ).toFixed(2)
     );
   }
 
@@ -435,7 +435,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Exporting graph...");
   // Write graph to file
   fs.writeFileSync(
-    "../public/exported_graph_minified.json",
+    "./out/exported_graph_minified.json",
     JSON.stringify(graph.export())
   );
   log("Done exporting graph");

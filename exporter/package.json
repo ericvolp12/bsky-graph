@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/exporter.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "upload": "wrangler r2 object put bsky-jazco/exported_graph_minified_test.json --file=out/exported_graph_minified.json --ct application/json"
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +19,8 @@
     "iwanthue": "^2.0.0",
     "ts-node": "^10.9.1",
     "tsc": "^2.0.4",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "wrangler": "^2.20.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.1"
