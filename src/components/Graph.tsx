@@ -441,7 +441,9 @@ const GraphContainer: React.FC<{}> = () => {
   };
 
   async function fetchGraph() {
-    const textGraph = await fetch("/exported_graph_minified.json");
+    const textGraph = await fetch(
+      "https://s3.jazco.io/exported_graph_minified.json"
+    );
     const responseJSON = await textGraph.json();
     setGraphDump(responseJSON);
   }
