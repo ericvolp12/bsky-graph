@@ -21,6 +21,8 @@ interface TopPoster {
 interface AuthorStatsResponse {
   total_authors: number;
   total_users: number;
+  total_posts: number;
+  hellthread_posts: number;
   mean_post_count: number;
   percentiles: Percentile[];
   brackets: Bracket[];
@@ -81,9 +83,9 @@ const Stats: FC<{}> = () => {
                     </div>
                   </div>
                 </div>
-                <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6 max-w-lg mx-auto">
+                <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-5 max-w-5xl mx-auto">
                   {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
                       <dt className="text-base leading-7 text-gray-600">
                         Users
                       </dt>
@@ -93,7 +95,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   )}
                   {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
                       <dt className="text-base leading-7 text-gray-600">
                         Post Authors
                       </dt>
@@ -103,12 +105,32 @@ const Stats: FC<{}> = () => {
                     </div>
                   )}
                   {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1 col-span-2">
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
                       <dt className="text-base leading-7 text-gray-600">
                         Mean Post Count
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
                         {stats.mean_post_count.toLocaleString()}
+                      </dd>
+                    </div>
+                  )}
+                  {stats && (
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
+                      <dt className="text-base leading-7 text-gray-600">
+                        Total Posts
+                      </dt>
+                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                        {stats.total_posts.toLocaleString()}
+                      </dd>
+                    </div>
+                  )}
+                  {stats && (
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
+                      <dt className="text-base leading-7 text-gray-600">
+                        Hellthread Posts
+                      </dt>
+                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                        {stats.hellthread_posts.toLocaleString()}
                       </dd>
                     </div>
                   )}
