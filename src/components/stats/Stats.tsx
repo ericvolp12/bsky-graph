@@ -79,7 +79,7 @@ const Stats: FC<{}> = () => {
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="text-gray-700 text-lg font-semibold">
-                      Aggregate stats for all authors in Jaz's BlueSky index.
+                      Aggregate stats for all posts in Jaz's BlueSky index.
                     </div>
                   </div>
                 </div>
