@@ -46,6 +46,11 @@ const Stats: FC<{}> = () => {
     document.title = "Stats for BlueSky by Jaz (jaz.bsky.social)";
   }, []);
 
+  const getMillionString = (num: number) => {
+    if (num < 1000000) return num.toLocaleString();
+    return `${(num / 1000000).toFixed(2)}M`;
+  };
+
   useEffect(() => {
     fetch("https://bsky-search.jazco.io/stats")
       .then((res) => res.json())
@@ -110,7 +115,7 @@ const Stats: FC<{}> = () => {
                         Mean Post Count
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.mean_post_count.toLocaleString()}
+                        {stats.mean_post_count.toFixed(2)}
                       </dd>
                     </div>
                   )}
@@ -120,7 +125,7 @@ const Stats: FC<{}> = () => {
                         Total Posts
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.total_posts.toLocaleString()}
+                        {getMillionString(stats.total_posts)}
                       </dd>
                     </div>
                   )}
@@ -130,7 +135,7 @@ const Stats: FC<{}> = () => {
                         Hellthread Posts
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.hellthread_posts.toLocaleString()}
+                        {getMillionString(stats.hellthread_posts)}
                       </dd>
                     </div>
                   )}
