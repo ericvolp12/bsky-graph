@@ -8,7 +8,8 @@
     "start": "tsc && node dist/exporter.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "upload_staging": "wrangler r2 object put bsky-jazco/exported_graph_minified_test.json --file=out/exported_graph_minified.json --ct application/json",
-    "upload_prod": "wrangler r2 object put bsky-jazco/exported_graph_minified.json --file=out/exported_graph_minified.json --ct application/json"
+    "upload_prod": "wrangler r2 object put bsky-jazco/exported_graph_minified.json --file=out/exported_graph_minified.json --ct application/json",
+    "upload_enriched": "wrangler r2 object put bsky-jazco/exported_graph_enriched.json --file=out/exported_graph_enriched.json --ct application/json"
   },
   "author": "",
   "license": "ISC",

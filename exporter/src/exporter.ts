@@ -180,6 +180,12 @@ async function fetchGraph() {
   return { edges, nodes };
 }
 
+// If "enriched" is set, leave DIDs in the node data
+
+const enriched = process.argv.length >= 3 && process.argv[2] === "enriched";
+
+log(`Starting exporter${enriched ? " in enriched mode" : ""}...`);
+
 fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   const { edges, nodes } = graphData;
   // Create the graph
@@ -199,11 +205,22 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       did: node.did,
       label: node.handle,
     };
-    const graphNode = {
-      key: i,
-      label: node.handle,
-    };
-    graph.addNode(i, graphNode);
+
+    if (enriched) {
+      const graphNode = {
+        key: i,
+        label: node.handle,
+        did: node.did,
+      };
+      graph.addNode(i, graphNode);
+    } else {
+      const graphNode = {
+        key: i,
+        label: node.handle,
+      };
+      graph.addNode(i, graphNode);
+    }
+
     indexNodes.set(node.did, indexNode);
   }
 
@@ -433,10 +450,11 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   graph.setAttribute("lastUpdated", new Date().toISOString());
 
   log("Exporting graph...");
+  const outputPath = enriched
+    ? "./out/exported_graph_enriched.json"
+    : "./out/exported_graph_minified.json";
+
   // Write graph to file
-  fs.writeFileSync(
-    "./out/exported_graph_minified.json",
-    JSON.stringify(graph.export())
-  );
+  fs.writeFileSync(outputPath, JSON.stringify(graph.export()));
   log("Done exporting graph");
 });
