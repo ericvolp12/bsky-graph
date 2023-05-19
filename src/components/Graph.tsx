@@ -68,7 +68,7 @@ knownClusterColorMappings.set("Brasilian Swiftie Subcluster", "#6e1799");
 knownClusterColorMappings.set("Turkish Language Minicluster", "#743232");
 knownClusterColorMappings.set("Web3", "#eac72d");
 knownClusterColorMappings.set("Musician Subcluster", "#e051a9");
-knownClusterColorMappings.set("Wrestling Subcluster", "#c7bf67");
+knownClusterColorMappings.set("Wrestling Subcluster", "#db1fbf");
 knownClusterColorMappings.set("Hellthread Metacluster", "#f07b3c");
 knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
 knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
@@ -106,6 +106,8 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   });
   return nodeMap;
 }
+
+const isLocal = document.location.hostname === "localhost";
 
 const GraphContainer: React.FC<{}> = () => {
   // Router info
@@ -441,9 +443,12 @@ const GraphContainer: React.FC<{}> = () => {
   };
 
   async function fetchGraph() {
-    const textGraph = await fetch(
-      "https://s3.jazco.io/exported_graph_minified.json"
-    );
+    let fetchURL = "https://s3.jazco.io/exported_graph_minified.json";
+    if (isLocal) {
+      fetchURL = "https://s3.jazco.io/exported_graph_minified_test.json";
+    }
+
+    const textGraph = await fetch(fetchURL);
     const responseJSON = await textGraph.json();
     setGraphDump(responseJSON);
   }
