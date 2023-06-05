@@ -299,9 +299,7 @@ const Stats: FC<{}> = () => {
               <span className="footer-text text-xs">
                 {" | "}
                 {stats
-                  ? formatDistanceToNow(parseISO(stats.updated_at), {
-                      addSuffix: true,
-                    })
+                  ? parseISO(stats.updated_at).toLocaleString()
                   : "loading..."}{" "}
                 <img src="/update-icon.svg" className="inline-block h-4 w-4" />
                 {" | "}
