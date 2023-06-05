@@ -51,7 +51,7 @@ const Stats: FC<{}> = () => {
     return `${(num / 1000000).toFixed(2)}M`;
   };
 
-  useEffect(() => {
+  const refreshStats = () => {
     fetch("https://bsky-search.jazco.io/stats")
       .then((res) => res.json())
       .then((res: AuthorStatsResponse) => {
@@ -64,6 +64,16 @@ const Stats: FC<{}> = () => {
       .catch((err) => {
         setError(err.message);
       });
+  };
+
+  useEffect(() => {
+    refreshStats();
+    // Refresh stats every 5 minutes
+    const interval = setInterval(() => {
+      refreshStats();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
