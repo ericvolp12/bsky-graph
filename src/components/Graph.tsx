@@ -423,7 +423,7 @@ const GraphContainer: React.FC<{}> = () => {
         },
         doubleClickNode: (event: any) => {
           window.open(
-            `https://staging.bsky.app/profile/${graph?.getNodeAttribute(
+            `https://bsky.app/profile/${graph?.getNodeAttribute(
               event.node,
               "label"
             )}`,
@@ -526,7 +526,7 @@ const GraphContainer: React.FC<{}> = () => {
                   These are the top 10 moots that{" "}
                   <a
                     className="font-bold underline-offset-1 underline break-all"
-                    href={`https://staging.bsky.app/profile/${graph?.getNodeAttribute(
+                    href={`https://bsky.app/profile/${graph?.getNodeAttribute(
                       selectedNode,
                       "label"
                     )}`}
@@ -548,7 +548,7 @@ const GraphContainer: React.FC<{}> = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium text-gray-900 truncate">
                         <a
-                          href={`https://staging.bsky.app/profile/${moot.label}`}
+                          href={`https://bsky.app/profile/${moot.label}`}
                           target="_blank"
                         >
                           {moot.label}
@@ -694,7 +694,7 @@ const GraphContainer: React.FC<{}> = () => {
           <span className="footer-text text-xs">
             Built by{" "}
             <a
-              href="https://staging.bsky.app/profile/jaz.bsky.social"
+              href="https://bsky.app/profile/jaz.bsky.social"
               target="_blank"
               className="font-bold underline-offset-1 underline"
             >

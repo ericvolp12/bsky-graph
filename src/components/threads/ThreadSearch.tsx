@@ -104,7 +104,7 @@ const ThreadSearch: React.FC<{}> = () => {
               <span className="footer-text text-xs">
                 Built by{" "}
                 <a
-                  href="https://staging.bsky.app/profile/jaz.bsky.social"
+                  href="https://bsky.app/profile/jaz.bsky.social"
                   target="_blank"
                   className="font-bold underline-offset-1 underline"
                 >

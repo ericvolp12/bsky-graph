@@ -42,7 +42,7 @@ const PostView: FC<PostViewProps> = ({ node }) => {
       <div className="px-3 py-4 sm:p-6">
         <h3 className="text-base font-semibold leading-6 text-gray-900">
           <a
-            href={`https://staging.bsky.app/profile/${node.author_did}`}
+            href={`https://bsky.app/profile/${node.author_did}`}
             className="text-indigo-500 hover:text-indigo-600"
             target="_blank"
           >
@@ -62,7 +62,7 @@ const PostView: FC<PostViewProps> = ({ node }) => {
         <div className="mt-2 max-w-sm text-xs text-gray-400">
           <span>
             <a
-              href={`https://staging.bsky.app/profile/${node.author_did}/post/${node.id}`}
+              href={`https://bsky.app/profile/${node.author_did}/post/${node.id}`}
               className="text-blue-500 hover:text-blue-600"
               target="_blank"
             >

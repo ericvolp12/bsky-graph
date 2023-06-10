@@ -240,7 +240,7 @@ const Stats: FC<{}> = () => {
                               </div>
                               <div className="text-sm font-medium text-gray-900 truncate px-4">
                                 <a
-                                  href={`https://staging.bsky.app/profile/${poster.handle}`}
+                                  href={`https://bsky.app/profile/${poster.handle}`}
                                   target="_blank"
                                 >
                                   {poster.handle}
@@ -288,7 +288,7 @@ const Stats: FC<{}> = () => {
               <span className="footer-text text-xs">
                 Built by{" "}
                 <a
-                  href="https://staging.bsky.app/profile/jaz.bsky.social"
+                  href="https://bsky.app/profile/jaz.bsky.social"
                   target="_blank"
                   className="font-bold underline-offset-1 underline"
                 >
