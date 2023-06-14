@@ -78,6 +78,8 @@ knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
 knownClusterColorMappings.set("Alf Minicluster", "#f00006");
 knownClusterColorMappings.set("Furries", "#1ae828");
 knownClusterColorMappings.set("Squid Cluster", "#220e7d");
+knownClusterColorMappings.set("Ukrainian Cluster", "#ffd700");
+
 // knownClusterColorMappings.set("BIPOC in Tech", "#ff7b7b");
 
 function constructEdgeMap(graph: MultiDirectedGraph): Map<string, Edge> {

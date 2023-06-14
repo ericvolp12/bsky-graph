@@ -116,6 +116,11 @@ clusterRepresentatives.set("maureenbug.bsky.social", {
   prio: 3,
 });
 
+clusterRepresentatives.set("mathan.dev", {
+  label: "Ukrainian Cluster",
+  prio: 3,
+});
+
 const filteredHandles = ["mattyglesias.bsky.social"];
 
 // log logs a message with a timestamp in human-readale format
@@ -350,7 +355,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.15,
+    resolution: 1.08,
   });
   log("Done assigning community partitions");
 
