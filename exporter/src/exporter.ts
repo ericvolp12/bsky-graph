@@ -24,6 +24,7 @@ interface IndexNode {
 interface Cluster {
   label?: string;
   idx: string;
+  dbIndex?: number;
   x?: number;
   y?: number;
   color?: string;
@@ -36,6 +37,7 @@ interface Cluster {
 interface ClusterRepPrio {
   label: string;
   prio: number;
+  dbIndex: number;
 }
 
 const clusterRepresentatives: Map<string, ClusterRepPrio> = new Map();
@@ -43,85 +45,110 @@ const clusterRepresentatives: Map<string, ClusterRepPrio> = new Map();
 clusterRepresentatives.set("yui.bsky.social", {
   label: "Japanese Language Cluster",
   prio: 5,
+  dbIndex: 500,
 });
 clusterRepresentatives.set("shahbazi.bsky.social", {
   label: "Persian Language Cluster",
   prio: 5,
+  dbIndex: 504,
 });
 clusterRepresentatives.set("burum.bsky.social", {
   label: "Korean Language Cluster",
   prio: 5,
+  dbIndex: 506,
 });
 clusterRepresentatives.set("livialamblet.com", {
   label: "Brasil Supercluster",
   prio: 5,
+  dbIndex: 502,
 });
 clusterRepresentatives.set("hoax.bsky.social", {
   label: "Brasilian Swiftie Subcluster",
   prio: 4,
+  dbIndex: 516,
 });
 clusterRepresentatives.set("vedat.bsky.social", {
   label: "Turkish Language Minicluster",
   prio: 4,
+  dbIndex: 515,
 });
-clusterRepresentatives.set("awhurst.bsky.social", { label: "Web3", prio: 4 });
+clusterRepresentatives.set("awhurst.bsky.social", {
+  label: "Web3",
+  prio: 4,
+  dbIndex: 510,
+});
 // clusterRepresentatives.set("wesbos.com", {
 //   label: "Front-end Developers",
 //   prio: 3,
 // });
-clusterRepresentatives.set("faineg.bsky.social", {
-  label: "Alf Minicluster",
-  prio: 3,
-});
 clusterRepresentatives.set("pfrazee.com", {
   label: "BSky English Language Metacluster",
   prio: 5,
-});
-clusterRepresentatives.set("lookitup.baby", {
-  label: "Goose Metacluster",
-  prio: 4,
+  dbIndex: 501,
 });
 clusterRepresentatives.set("nori.gay", {
   label: "Hellthread Metacluster",
   prio: 4,
+  dbIndex: 505,
 });
 
 clusterRepresentatives.set("andy.wrestlejoy.com", {
   label: "Wrestling Subcluster",
   prio: 3,
+  dbIndex: 508,
 });
 
 clusterRepresentatives.set("johnmichiemusic.com", {
   label: "Musician Subcluster",
   prio: 3,
+  dbIndex: 509,
 });
 
 clusterRepresentatives.set(
   "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
-  { label: "TPOT", prio: 4 }
+  {
+    label: "TPOT",
+    prio: 4,
+    dbIndex: 507,
+  }
 );
 clusterRepresentatives.set("junlper.bsky.social", {
   label: "Trans + Queer Shitposters",
   prio: 4,
+  dbIndex: 503,
 });
 // clusterRepresentatives.set("itguyry.com", "BIPOC in Tech");
 
 clusterRepresentatives.set("yap.zone", {
   label: "Furries",
   prio: 3,
+  dbIndex: 511,
 });
 
 clusterRepresentatives.set("maureenbug.bsky.social", {
   label: "Squid Cluster",
   prio: 3,
+  dbIndex: 512,
 });
 
 clusterRepresentatives.set("mathan.dev", {
   label: "Ukrainian Cluster",
   prio: 3,
+  dbIndex: 518,
 });
 
-const filteredHandles = ["mattyglesias.bsky.social"];
+clusterRepresentatives.set("swamilee.xyz", {
+  label: "Italian Cluster",
+  prio: 3,
+  dbIndex: 519,
+});
+
+// clusterRepresentatives.set("guganoid.bsky.social", {
+//   label: "Portugal Cluster",
+//   prio: 3,
+// });
+
+const filteredHandles = ["mattyglesias.bsky.social", "berduck.deepfates.com"];
 
 // log logs a message with a timestamp in human-readale format
 function log(msg: string) {
@@ -355,7 +382,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.08,
+    resolution: 1.15,
   });
   log("Done assigning community partitions");
 
@@ -384,6 +411,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
         communityClusters[idx].representative = atts.label;
         communityClusters[idx].prio = repClusterPrio.prio;
         communityClusters[idx].label = repClusterPrio.label;
+        communityClusters[idx].dbIndex = repClusterPrio.dbIndex;
       }
     }
   });
@@ -492,6 +520,21 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   }
 
   graph.setAttribute("clusters", communityClusters);
+
+  // Reassign cluster indices to match db indices
+  for (const community in communityClusters) {
+    const cluster = communityClusters[community];
+    if (cluster.dbIndex !== undefined) {
+      // Reassign nodes to the new cluster index
+      graph.updateEachNodeAttributes((_, atts) => {
+        if (atts.community === community) {
+          atts.community = `${cluster.dbIndex}`;
+        }
+        return atts;
+      });
+      cluster.idx = `${cluster.dbIndex}`;
+    }
+  }
 
   log(`Number of clusters: ${Object.keys(communityClusters).length}`);
   for (const communityIdx in communityClusters) {

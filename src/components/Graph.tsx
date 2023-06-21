@@ -79,6 +79,7 @@ knownClusterColorMappings.set("Alf Minicluster", "#f00006");
 knownClusterColorMappings.set("Furries", "#1ae828");
 knownClusterColorMappings.set("Squid Cluster", "#220e7d");
 knownClusterColorMappings.set("Ukrainian Cluster", "#ffd700");
+knownClusterColorMappings.set("Italian Cluster", "#008C45");
 
 // knownClusterColorMappings.set("BIPOC in Tech", "#ff7b7b");
 
@@ -236,7 +237,7 @@ const GraphContainer: React.FC<{}> = () => {
           const viewportPos = sigma.graphToViewport(cluster as Coordinates);
           newClusters.push({
             label: cluster.label,
-            idx: community,
+            idx: cluster.idx,
             x: viewportPos.x,
             y: viewportPos.y,
             color: cluster.color,
