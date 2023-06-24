@@ -80,6 +80,7 @@ knownClusterColorMappings.set("Furries", "#1ae828");
 knownClusterColorMappings.set("Squid Cluster", "#220e7d");
 knownClusterColorMappings.set("Ukrainian Cluster", "#ffd700");
 knownClusterColorMappings.set("Italian Cluster", "#008C45");
+knownClusterColorMappings.set("Gay Himbo Cluster", "#b45b00");
 
 // knownClusterColorMappings.set("BIPOC in Tech", "#ff7b7b");
 

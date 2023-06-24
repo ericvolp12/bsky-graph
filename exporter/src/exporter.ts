@@ -143,6 +143,12 @@ clusterRepresentatives.set("swamilee.xyz", {
   dbIndex: 519,
 });
 
+clusterRepresentatives.set("muffinchips.bsky.social", {
+  label: "Gay Himbo Cluster",
+  prio: 3,
+  dbIndex: 520,
+});
+
 // clusterRepresentatives.set("guganoid.bsky.social", {
 //   label: "Portugal Cluster",
 //   prio: 3,
@@ -316,6 +322,27 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       }
     );
   }
+
+  // log("Filtering edges...");
+  // // Reduce all edges to the top 10 outbound edges for each node
+  // graph.forEachNode((node, attrs) => {
+  //   const edges = graph.outEdges(node);
+  //   const sortedEdges = edges.sort((a, b) => {
+  //     return (
+  //       graph.getEdgeAttribute(b, "weight") -
+  //       graph.getEdgeAttribute(a, "weight")
+  //     );
+  //   });
+  //   const topEdges = sortedEdges.slice(0, 10);
+  //   const topEdgeSet = new Set(topEdges);
+  //   edges.forEach((edge) => {
+  //     if (!topEdgeSet.has(edge)) {
+  //       graph.dropEdge(edge);
+  //     }
+  //   });
+  // });
+
+  // log(`Graph has ${graph.order} nodes and ${graph.size} edges.`);
 
   log("Done adding edges");
 
