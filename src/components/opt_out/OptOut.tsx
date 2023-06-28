@@ -52,7 +52,7 @@ const OptOut: React.FC<{}> = () => {
                 </p>
               </div>
               <form className="mt-6 sm:flex sm:items-center" action="#">
-                <label htmlFor="threadURL" className="sr-only">
+                <label htmlFor="username" className="sr-only">
                   BSky Username or Email Address
                 </label>
                 <div className="grid grid-cols-1 sm:flex-auto mx-2">
