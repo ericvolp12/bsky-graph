@@ -120,6 +120,34 @@ const OptOut: React.FC<{}> = () => {
                     Opt Out
                   </button>
                 </div>
+                <div className="mt-3 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fetch("https://bsky-search.jazco.io/opt_in", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          username,
+                          appPassword,
+                        }),
+                      })
+                        .then((res) => res.json())
+                        .then((res) => {
+                          if (res.error) {
+                            setError(res.error);
+                          } else {
+                            setSuccess(res.message);
+                          }
+                        });
+                    }}
+                    className="block w-full rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                  >
+                    Opt Back In
+                  </button>
+                </div>
               </form>
               <p className="mt-3 text-sm text-gray-500">
                 Feel free to delete your App Password after you have opted out,
