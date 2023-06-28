@@ -563,6 +563,14 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
     }
   }
 
+  // Remove Handles and DIDs from nodes if not using enriched graph to protect privacy
+  if (!enriched) {
+    graph.updateEachNodeAttributes((_, atts) => {
+      atts.label = atts.key;
+      return atts;
+    });
+  }
+
   log(`Number of clusters: ${Object.keys(communityClusters).length}`);
   for (const communityIdx in communityClusters) {
     const community = communityClusters[communityIdx];
