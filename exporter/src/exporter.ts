@@ -154,7 +154,7 @@ clusterRepresentatives.set("muffinchips.bsky.social", {
 //   prio: 3,
 // });
 
-const filteredHandles = ["mattyglesias.bsky.social", "berduck.deepfates.com"];
+let filteredHandles = ["mattyglesias.bsky.social", "berduck.deepfates.com"];
 
 // log logs a message with a timestamp in human-readale format
 function log(msg: string) {
@@ -169,6 +169,18 @@ async function fetchGraph() {
 
   const nodesMap: Map<string, Node> = new Map();
   const edges: Edge[] = [];
+
+  log("Fetching opted out authors...");
+
+  const optedOutAuthorsResp = await fetch(
+    "https://bsky-search.jazco.io/opted_out_authors"
+  );
+  const optedOutAuthorsJSON = await optedOutAuthorsResp.json();
+  filteredHandles = filteredHandles.concat(
+    optedOutAuthorsJSON.authors.map((author: any) => author.handle)
+  );
+
+  log(`Filtered handle count ${filteredHandles.length}`);
 
   log("Parsing graph response...");
   lines.forEach((line, _) => {

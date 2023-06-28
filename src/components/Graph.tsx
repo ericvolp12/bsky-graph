@@ -725,6 +725,14 @@ const GraphContainer: React.FC<{}> = () => {
                 className="inline-block h-3.5 w-4 mb-0.5"
               />
             </a>
+            {" | "}
+            <a
+              href="/opt_out"
+              target="_blank"
+              className="font-bold underline-offset-1 underline"
+            >
+              opt out
+            </a>
           </span>
         </div>
       </footer>
