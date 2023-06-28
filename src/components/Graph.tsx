@@ -102,7 +102,9 @@ function constructNodeMap(graph: MultiDirectedGraph): Map<string, Node> {
   return nodeMap;
 }
 
-const isLocal = document.location.hostname === "localhost";
+const isLocal =
+  document.location.hostname === "localhost" ||
+  document.location.hostname.endsWith(".bsky-graph.pages.dev");
 
 const GraphContainer: React.FC<{}> = () => {
   // Router info
