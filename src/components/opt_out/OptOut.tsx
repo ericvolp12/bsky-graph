@@ -46,9 +46,15 @@ const OptOut: React.FC<{}> = () => {
                 </p>
                 <p className="mt-3 text-sm text-gray-500">
                   Generate an AppPassword for use{" "}
-                  <a href="https://bsky.app/settings/app-passwords">here</a> and
-                  enter it below so we can confirm your identity before opting
-                  out.
+                  <a
+                    href="https://bsky.app/settings/app-passwords"
+                    target="_blank"
+                    className="text-indigo-600 hover:text-indigo-500 underline"
+                  >
+                    here
+                  </a>{" "}
+                  and enter it below so we can confirm your identity before
+                  opting out.
                 </p>
               </div>
               <form className="mt-6 sm:flex sm:items-center" action="#">
