@@ -232,9 +232,7 @@ async function fetchGraph() {
 
 // If "enriched" is set, leave DIDs in the node data
 
-const enriched = process.argv.length >= 3 && process.argv[2] === "enriched";
-
-log(`Starting exporter${enriched ? " in enriched mode" : ""}...`);
+log("Starting exporter...");
 
 fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   const { edges, nodes } = graphData;
@@ -255,22 +253,12 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
       did: node.did,
       label: node.handle,
     };
-
-    if (enriched) {
-      const graphNode = {
-        key: i,
-        label: node.handle,
-        did: node.did,
-      };
-      graph.addNode(i, graphNode);
-    } else {
-      const graphNode = {
-        key: i,
-        label: node.handle,
-      };
-      graph.addNode(i, graphNode);
-    }
-
+    const graphNode = {
+      key: i,
+      label: node.handle,
+      did: node.did,
+    };
+    graph.addNode(i, graphNode);
     indexNodes.set(node.did, indexNode);
   }
 
@@ -589,12 +577,23 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
 
   graph.setAttribute("lastUpdated", new Date().toISOString());
 
-  log("Exporting graph...");
-  const outputPath = enriched
-    ? "./out/exported_graph_enriched.json"
-    : "./out/exported_graph_minified.json";
-
-  // Write graph to file
+  log("Exporting enriched graph...");
+  let outputPath = "./out/exported_graph_enriched.json";
   fs.writeFileSync(outputPath, JSON.stringify(graph.export()));
-  log("Done exporting graph");
+  log("Done exporting enriched graph");
+
+  log("Minifying graph...");
+  // Remove DIDs from nodes if not enriched
+  graph.updateEachNodeAttributes((_, atts) => {
+    if (atts.did !== undefined) {
+      delete atts.did;
+    }
+    return atts;
+  });
+  log("Done minifying graph");
+
+  log("Exporting minified graph...");
+  outputPath = "./out/exported_graph_minified.json";
+  fs.writeFileSync(outputPath, JSON.stringify(graph.export()));
+  log("Done exporting minified graph");
 });
