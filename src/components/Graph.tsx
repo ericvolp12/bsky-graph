@@ -624,8 +624,10 @@ const GraphContainer: React.FC<{}> = () => {
                 </dt>
                 <dd className="lg:text-3xl mr-auto ml-auto text-lg font-medium leading-10 tracking-tight text-gray-900">
                   {inWeight >= 0 && outWeight >= 0
-                    ? `${inWeight.toLocaleString()} / ${outWeight.toLocaleString()}`
-                    : totalWeight.toLocaleString()}
+                    ? `${Math.round(inWeight).toLocaleString()} / ${Math.round(
+                        outWeight
+                      ).toLocaleString()}`
+                    : Math.round(totalWeight).toLocaleString()}
                 </dd>
               </div>
             </dl>

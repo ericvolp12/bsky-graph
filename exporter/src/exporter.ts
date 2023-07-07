@@ -163,9 +163,13 @@ function log(msg: string) {
 
 async function fetchGraph() {
   log("Fetching graph...");
-  const textGraph = await fetch("http://10.0.6.32:6060/graph");
-  const responseText = await textGraph.text();
-  const lines = responseText.split("\n").filter((line) => line.trim() !== "");
+  // const textGraph = await fetch("http://10.0.6.32:6060/graph");
+  // const responseText = await textGraph.text();
+  const data = fs.readFileSync(
+    "/mnt/secundus/Documents/personal/bsky/test_export_1.tsv",
+    "utf8"
+  );
+  const lines = data.split("\n").filter((line) => line.trim() !== "");
 
   const nodesMap: Map<string, Node> = new Map();
   const edges: Edge[] = [];
@@ -185,15 +189,15 @@ async function fetchGraph() {
   log("Parsing graph response...");
   lines.forEach((line, _) => {
     const [source, sourceHandle, target, targetHandle, weight] =
-      line.split(" ");
+      line.split("\t");
     if (
       filteredHandles.includes(sourceHandle) ||
       filteredHandles.includes(targetHandle)
     ) {
       return;
     }
-    const parsedWeight = parseInt(weight);
-    if (parsedWeight > 2 && source !== target) {
+    const parsedWeight = parseFloat(weight);
+    if (source !== target && parsedWeight > 2) {
       const sourceNode = { did: source, handle: sourceHandle };
       if (!nodesMap.has(source) && source !== "" && sourceHandle !== "") {
         nodesMap.set(source, sourceNode);
