@@ -52,7 +52,7 @@ clusterRepresentatives.set("shahbazi.bsky.social", {
   prio: 5,
   dbIndex: 504,
 });
-clusterRepresentatives.set("burum.bsky.social", {
+clusterRepresentatives.set("ritzdays.net", {
   label: "Korean Language Cluster",
   prio: 5,
   dbIndex: 506,
@@ -149,10 +149,11 @@ clusterRepresentatives.set("muffinchips.bsky.social", {
   dbIndex: 520,
 });
 
-// clusterRepresentatives.set("guganoid.bsky.social", {
-//   label: "Portugal Cluster",
-//   prio: 3,
-// });
+clusterRepresentatives.set("jonasnuts.bsky.social", {
+  label: "Portugal Cluster",
+  prio: 3,
+  dbIndex: 521,
+});
 
 let filteredHandles = ["mattyglesias.bsky.social", "berduck.deepfates.com"];
 
@@ -166,7 +167,7 @@ async function fetchGraph() {
   // const textGraph = await fetch("http://10.0.6.32:6060/graph");
   // const responseText = await textGraph.text();
   const data = fs.readFileSync(
-    "/mnt/secundus/Documents/personal/bsky/test_export_1.tsv",
+    "/mnt/secundus/Documents/personal/bsky/export_2.tsv",
     "utf8"
   );
   const lines = data.split("\n").filter((line) => line.trim() !== "");
