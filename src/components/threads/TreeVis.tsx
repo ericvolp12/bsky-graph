@@ -7,7 +7,7 @@ import {
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { MultiDirectedGraph } from "graphology";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
@@ -17,19 +17,6 @@ import Loading from "../Loading";
 import { AuthorSearch } from "./AuthorSearch";
 import ErrorMsg from "./ErrorMsg";
 import PostView from "./PostView";
-
-// Hook
-function usePrevious<T>(value: T): T {
-  // The ref object is a generic container whose current property is mutable ...
-  // ... and can hold any value, similar to an instance property on a class
-  const ref: any = useRef<T>();
-  // Store current value in ref
-  useEffect(() => {
-    ref.current = value;
-  }, [value]); // Only re-run if value changes
-  // Return previous value (happens before update in useEffect above)
-  return ref.current;
-}
 
 interface Edge {
   source: string;
@@ -42,18 +29,11 @@ interface Node {
   label: string;
 }
 
-interface SearchParams {
-  author_did?: string;
-  author_handle?: string;
-  post?: string;
-  selectdPost?: string;
-  selectedAuthor?: string;
-}
-
 interface Post {
   id: string;
   text: string;
   parent_post_id: string | null;
+  parent_relationship: string | null;
   root_post_id: string | null;
   author_did: string;
   created_at: string;
@@ -138,6 +118,7 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [loading, setLoading] = React.useState<boolean>(true);
 
   const [modMode, setModMode] = React.useState<boolean>(false);
+  const [quoteMode, setQuoteMode] = React.useState<boolean>(false);
 
   useEffect(() => {
     document.title = "Thread Visualizer for BlueSky by Jaz (jaz.bsky.social)";
@@ -233,6 +214,15 @@ const TreeVisContainer: React.FC<{}> = () => {
               const intensity = attr.post.sentiment_confidence.toLocaleString();
               attr.color = `rgba(255,0,0,${intensity})`;
             }
+          }
+        } else if (quoteMode) {
+          const oldColor = attr.color;
+          attr.color = "rgba(0,0,0,0.1)";
+          if (
+            attr.post.parent_relationship !== null &&
+            attr.post.parent_relationship.startsWith("q")
+          ) {
+            attr.color = oldColor;
           }
         } else if (selectedAuthor !== null) {
           if (attr.author_handle === selectedAuthor) {
@@ -629,6 +619,22 @@ const TreeVisContainer: React.FC<{}> = () => {
                       className="ml-2 flex text-sm text-gray-900 break-words"
                     >
                       Mod Vision
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="quoteMode"
+                      name="quoteMode"
+                      type="checkbox"
+                      checked={quoteMode}
+                      onChange={(e) => setQuoteMode(e.target.checked)}
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="moderatorMode"
+                      className="ml-2 flex text-sm text-gray-900 break-words"
+                    >
+                      Focus Quotes
                     </label>
                   </div>
                 </div>

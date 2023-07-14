@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from "graphology";
-import forceAtlas2 from "graphology-layout-forceatlas2";
+import forceAtlas2 from "./graphology-layout-forceatlas2/index.js";
 import circular from "graphology-layout/circular";
 import * as fs from "fs";
 import louvain from "graphology-communities-louvain";
@@ -167,7 +167,7 @@ async function fetchGraph() {
   // const textGraph = await fetch("http://10.0.6.32:6060/graph");
   // const responseText = await textGraph.text();
   const data = fs.readFileSync(
-    "/mnt/secundus/Documents/personal/bsky/export_2.tsv",
+    "/mnt/secundus/Documents/personal/bsky/export_3.tsv",
     "utf8"
   );
   const lines = data.split("\n").filter((line) => line.trim() !== "");
@@ -198,7 +198,7 @@ async function fetchGraph() {
       return;
     }
     const parsedWeight = parseFloat(weight);
-    if (source !== target && parsedWeight > 2) {
+    if (source !== target && parsedWeight > 1) {
       const sourceNode = { did: source, handle: sourceHandle };
       if (!nodesMap.has(source) && source !== "" && sourceHandle !== "") {
         nodesMap.set(source, sourceNode);
@@ -352,8 +352,8 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Done adding edges");
 
   const degrees = graph.nodes().map((node) => graph.degree(node));
-  const minDegree = Math.min(...degrees);
-  const maxDegree = Math.max(...degrees);
+  const minDegree = degrees.reduce((a, b) => Math.min(a, b));
+  const maxDegree = degrees.reduce((a, b) => Math.max(a, b));
   const skyBluePalette = [
     "#009ACD", // DeepSkyBlue3
     "#5B9BD5", // CornflowerBlue
