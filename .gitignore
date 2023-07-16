@@ -25,3 +25,6 @@ dist-ssr
 .vscode
 
 out/
+
+.env
+graph.tsv

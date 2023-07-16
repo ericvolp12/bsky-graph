@@ -3,6 +3,9 @@ import click
 import psycopg2
 import psycopg2.extras
 from tqdm import tqdm
+import dotenv
+
+dotenv.load_dotenv()
 
 QUERY = """
 WITH author_relationships AS (
@@ -45,12 +48,14 @@ GROUP BY source,
 
 
 @click.command()
-@click.option("--db-name", prompt=True, help="Database name")
-@click.option("--db-user", prompt=True, help="Database user")
-@click.option("--db-pass", prompt=True, help="Database password", hide_input=True)
-@click.option("--db-host", prompt=True, help="Database host")
-@click.option("--db-port", default=5432, help="Database port")
-@click.option("--output", prompt=True, help="Output file")
+@click.option("--db-name", default=os.getenv("DB_NAME"), help="Database name")
+@click.option("--db-user", default=os.getenv("DB_USER"), help="Database user")
+@click.option(
+    "--db-pass", default=os.getenv("DB_PASS"), help="Database password", hide_input=True
+)
+@click.option("--db-host", default=os.getenv("DB_HOST"), help="Database host")
+@click.option("--db-port", default=os.getenv("DB_PORT"), help="Database port")
+@click.option("--output", default=os.getenv("OUTPUT"), help="Output file")
 def export_query_to_tsv(db_name, db_user, db_pass, db_host, db_port, output):
     try:
         conn = psycopg2.connect(
