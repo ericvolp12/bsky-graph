@@ -112,7 +112,7 @@ clusterRepresentatives.set(
     dbIndex: 507,
   }
 );
-clusterRepresentatives.set("junlper.bsky.social", {
+clusterRepresentatives.set("estrogenempress.gay", {
   label: "Trans + Queer Shitposters",
   prio: 4,
   dbIndex: 503,
@@ -155,6 +155,12 @@ clusterRepresentatives.set("jonasnuts.bsky.social", {
   dbIndex: 521,
 });
 
+clusterRepresentatives.set("alicekeeler.com", {
+  label: "Education Cluster",
+  prio: 2,
+  dbIndex: 522,
+});
+
 let filteredHandles = ["mattyglesias.bsky.social", "berduck.deepfates.com"];
 
 // log logs a message with a timestamp in human-readale format
@@ -163,13 +169,8 @@ function log(msg: string) {
 }
 
 async function fetchGraph() {
-  log("Fetching graph...");
-  // const textGraph = await fetch("http://10.0.6.32:6060/graph");
-  // const responseText = await textGraph.text();
-  const data = fs.readFileSync(
-    "/mnt/secundus/Documents/personal/bsky/export_3.tsv",
-    "utf8"
-  );
+  log("Loading graph...");
+  const data = fs.readFileSync("graph.tsv", "utf8");
   const lines = data.split("\n").filter((line) => line.trim() !== "");
 
   const nodesMap: Map<string, Node> = new Map();
@@ -187,7 +188,7 @@ async function fetchGraph() {
 
   log(`Filtered handle count ${filteredHandles.length}`);
 
-  log("Parsing graph response...");
+  log("Parsing graph file...");
   lines.forEach((line, _) => {
     const [source, sourceHandle, target, targetHandle, weight] =
       line.split("\t");
@@ -198,7 +199,7 @@ async function fetchGraph() {
       return;
     }
     const parsedWeight = parseFloat(weight);
-    if (source !== target && parsedWeight > 1) {
+    if (source !== target && parsedWeight > 2) {
       const sourceNode = { did: source, handle: sourceHandle };
       if (!nodesMap.has(source) && source !== "" && sourceHandle !== "") {
         nodesMap.set(source, sourceNode);
@@ -414,7 +415,7 @@ fetchGraph().then((graphData: { edges: Edge[]; nodes: Node[] }) => {
   log("Assigning community partitions...");
   // To directly assign communities as a node attribute
   louvain.assign(graph, {
-    resolution: 1.15,
+    resolution: 1.18,
   });
   log("Done assigning community partitions");
 
