@@ -98,7 +98,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   </div>
                 </div>
-                <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-5 max-w-5xl mx-auto">
+                <dl className="grid grid-cols-2 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-4 max-w-5xl mx-auto">
                   {stats && (
                     <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
                       <dt className="text-base leading-7 text-gray-600">
@@ -136,16 +136,6 @@ const Stats: FC<{}> = () => {
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
                         {getMillionString(stats.total_posts)}
-                      </dd>
-                    </div>
-                  )}
-                  {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
-                      <dt className="text-base leading-7 text-gray-600">
-                        Hellthread Posts
-                      </dt>
-                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {getMillionString(stats.hellthread_posts)}
                       </dd>
                     </div>
                   )}
