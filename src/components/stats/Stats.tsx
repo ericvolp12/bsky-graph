@@ -157,7 +157,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   </div>
                   <div className="lg:mt-8 mt-2">
-                    <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6">
+                    <dl className="grid grid-cols-5 gap-x-2 lg:gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-10 justify-center">
                       {stats &&
                         stats.percentiles.map((p, idx) => (
                           <div
@@ -165,9 +165,12 @@ const Stats: FC<{}> = () => {
                             key={`p-${idx}`}
                           >
                             <dt className="text-base leading-7 text-gray-600">
-                              {p.percentile * 100}th Percentile
+                              {p.percentile * 100}th
+                              <span className="hidden sm:block">
+                                Percentile
+                              </span>
                             </dt>
-                            <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                            <dd className="order-first text-xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
                               {p.count.toLocaleString()}
                             </dd>
                           </div>
@@ -183,7 +186,7 @@ const Stats: FC<{}> = () => {
                     </div>
                   </div>
                   <div className="lg:mt-8 mt-2">
-                    <dl className="grid grid-cols-1 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6">
+                    <dl className="grid grid-cols-3 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6">
                       {stats &&
                         stats.brackets.map((b, idx) => (
                           <div
