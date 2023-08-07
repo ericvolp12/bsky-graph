@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { DailyDatapoint, DataVolumeBarChart } from "./Charts";
 
 interface Percentile {
   percentile: number;
@@ -22,12 +23,12 @@ interface AuthorStatsResponse {
   total_authors: number;
   total_users: number;
   total_posts: number;
-  hellthread_posts: number;
   mean_post_count: number;
   percentiles: Percentile[];
   brackets: Bracket[];
   updated_at: string;
   top_posters: TopPoster[];
+  daily_data: DailyDatapoint[];
 }
 
 const badgeClasses = [
@@ -59,6 +60,15 @@ const Stats: FC<{}> = () => {
         if (res.updated_at > new Date().toISOString()) {
           res.updated_at = new Date(Date.now() - 1000).toISOString();
         }
+        // Filter daily_data to only include the last 30 days (up until yesterday)
+        res.daily_data = res.daily_data.filter((d) => {
+          return (
+            new Date(d.date).getTime() >
+              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() &&
+            new Date(d.date).getTime() <
+              new Date(Date.now() - 24 * 60 * 60 * 1000).getTime()
+          );
+        });
         setStats(res);
       })
       .catch((err) => {
@@ -140,6 +150,9 @@ const Stats: FC<{}> = () => {
                     </div>
                   )}
                 </dl>
+                <div className="py-8 mt-2 h-128">
+                  <DataVolumeBarChart data={stats ? stats.daily_data : []} />
+                </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="text-gray-700 text-lg font-semibold">
