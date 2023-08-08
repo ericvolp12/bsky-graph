@@ -199,7 +199,7 @@ const Stats: FC<{}> = () => {
                             <dt className="text-base leading-7 text-gray-600">
                               {`>${b.min}`}
                             </dt>
-                            <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                            <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
                               {b.count.toLocaleString()}
                             </dd>
                           </div>
