@@ -42,6 +42,11 @@ const Stats: FC<{}> = () => {
   const [stats, setStats] = useState<AuthorStatsResponse | null>(null);
   const [error, setError] = useState<string>("");
   const [showTopPosters, setShowTopPosters] = useState<boolean>(false);
+  const [cols, setCols] = useState<string[]>([
+    "num_likes",
+    "num_follows",
+    "num_posts",
+  ]);
 
   useEffect(() => {
     document.title = "Stats for BlueSky by Jaz (jaz.bsky.social)";
@@ -151,7 +156,10 @@ const Stats: FC<{}> = () => {
                   )}
                 </dl>
                 <div className="py-8 mt-2 h-128">
-                  <DataVolumeBarChart data={stats ? stats.daily_data : []} />
+                  <DataVolumeBarChart
+                    data={stats ? stats.daily_data : []}
+                    cols={cols}
+                  />
                 </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">

@@ -14,6 +14,7 @@ export interface DailyDatapoint {
 
 export interface ChartProps {
   data: DailyDatapoint[];
+  cols?: string[];
 }
 
 const labelMap = {
@@ -24,10 +25,10 @@ const labelMap = {
 
 type labelKey = keyof typeof labelMap;
 
-export const DataVolumeBarChart = ({ data }: ChartProps) => (
+export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
   <ResponsiveBar
     data={data}
-    keys={["num_likes", "num_follows", "num_posts"]}
+    keys={cols}
     indexBy="date"
     layout="vertical"
     margin={{ top: 50, right: 60, bottom: 75, left: 50 }}
@@ -131,6 +132,7 @@ export const DataVolumeBarChart = ({ data }: ChartProps) => (
         itemDirection: "left-to-right",
         itemOpacity: 0.85,
         symbolSize: 10,
+        toggleSerie: true,
         effects: [
           {
             on: "hover",
