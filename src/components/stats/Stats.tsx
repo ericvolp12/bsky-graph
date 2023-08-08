@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { DailyDatapoint, DataVolumeBarChart } from "./Charts";
+import { Col, DailyDatapoint, DataVolumeBarChart } from "./Charts";
 
 interface Percentile {
   percentile: number;
@@ -42,10 +42,25 @@ const Stats: FC<{}> = () => {
   const [stats, setStats] = useState<AuthorStatsResponse | null>(null);
   const [error, setError] = useState<string>("");
   const [showTopPosters, setShowTopPosters] = useState<boolean>(false);
-  const [cols, setCols] = useState<string[]>([
-    "num_likes",
-    "num_follows",
-    "num_posts",
+  const [cols, setCols] = useState<Col[]>([
+    {
+      key: "num_likes",
+      label: "Likes",
+      color: "rgb(232, 193, 160)",
+      hidden: false,
+    },
+    {
+      key: "num_follows",
+      label: "Follows",
+      color: "rgb(244, 117, 96)",
+      hidden: false,
+    },
+    {
+      key: "num_posts",
+      label: "Posts",
+      color: "rgb(241, 225, 91)",
+      hidden: false,
+    },
   ]);
 
   useEffect(() => {
@@ -158,8 +173,39 @@ const Stats: FC<{}> = () => {
                 <div className="py-8 mt-2 h-128">
                   <DataVolumeBarChart
                     data={stats ? stats.daily_data : []}
-                    cols={cols}
+                    cols={cols.filter((c) => !c.hidden)}
                   />
+                  <div className="chart_legend">
+                    <div className="flex flex-row justify-center">
+                      {cols.map((col, idx) => (
+                        <div
+                          className="flex flex-row items-center mr-4"
+                          key={`legend-${idx}`}
+                          onClick={() => {
+                            const newCols = cols.map((c) => {
+                              if (c.key === col.key) {
+                                return {
+                                  ...c,
+                                  hidden: !c.hidden,
+                                };
+                              }
+                              return c;
+                            });
+                            setCols(newCols);
+                          }}
+                        >
+                          <div
+                            className="h-4 w-4 mr-1 rounded-full"
+                            style={{
+                              backgroundColor: col.color,
+                              opacity: col.hidden ? 0.5 : 1,
+                            }}
+                          ></div>
+                          <div className="text-xs">{col.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">

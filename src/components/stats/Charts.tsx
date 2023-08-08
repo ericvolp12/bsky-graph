@@ -12,9 +12,16 @@ export interface DailyDatapoint {
   num_blockers: number;
 }
 
+export interface Col {
+  key: string;
+  label: string;
+  color: string;
+  hidden: boolean;
+}
+
 export interface ChartProps {
   data: DailyDatapoint[];
-  cols?: string[];
+  cols: Col[];
 }
 
 const labelMap = {
@@ -28,14 +35,14 @@ type labelKey = keyof typeof labelMap;
 export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
   <ResponsiveBar
     data={data}
-    keys={cols}
+    keys={cols.map((c) => c.key)}
     indexBy="date"
     layout="vertical"
-    margin={{ top: 50, right: 60, bottom: 75, left: 50 }}
+    margin={{ top: 50, bottom: 75, left: 50 }}
     padding={0.15}
     valueScale={{ type: "linear" }}
     indexScale={{ type: "band", round: true }}
-    colors={{ scheme: "nivo" }}
+    colors={(d) => cols.find((c) => c.key === d.id)?.color ?? "#000000"}
     borderColor={{
       from: "color",
       modifiers: [["darker", 1.6]],
@@ -101,48 +108,6 @@ export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
         },
       },
     }}
-    legends={[
-      {
-        dataFrom: "keys",
-        data: [
-          {
-            id: "num_likes",
-            label: "Likes",
-            color: "rgb(232, 193, 160)",
-          },
-          {
-            id: "num_follows",
-            label: "Follows",
-            color: "rgb(244, 117, 96)",
-          },
-          {
-            id: "num_posts",
-            label: "Posts",
-            color: "rgb(241, 225, 91)",
-          },
-        ],
-        anchor: "bottom-right",
-        direction: "column",
-        justify: false,
-        translateX: 105,
-        translateY: 0,
-        itemsSpacing: 2,
-        itemWidth: 100,
-        itemHeight: 12,
-        itemDirection: "left-to-right",
-        itemOpacity: 0.85,
-        symbolSize: 10,
-        toggleSerie: true,
-        effects: [
-          {
-            on: "hover",
-            style: {
-              itemOpacity: 1,
-            },
-          },
-        ],
-      },
-    ]}
     role="application"
   />
 );
