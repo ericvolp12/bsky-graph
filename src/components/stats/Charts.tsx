@@ -38,7 +38,7 @@ export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
     keys={cols.map((c) => c.key)}
     indexBy="date"
     layout="vertical"
-    margin={{ top: 50, bottom: 75, left: 50 }}
+    margin={{ top: 50, right: 50, bottom: 75, left: 50 }}
     padding={0.15}
     valueScale={{ type: "linear" }}
     indexScale={{ type: "band", round: true }}
