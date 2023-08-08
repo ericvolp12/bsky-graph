@@ -181,6 +181,7 @@ const Stats: FC<{}> = () => {
                         <div
                           className="flex flex-row items-center mr-4"
                           key={`legend-${idx}`}
+                          style={{ cursor: "pointer" }}
                           onClick={() => {
                             const newCols = cols.map((c) => {
                               if (c.key === col.key) {
