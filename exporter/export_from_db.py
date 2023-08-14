@@ -14,30 +14,34 @@ dotenv.load_dotenv()
 QUERY = """
 WITH author_relationships AS (
     SELECT p1.actor_did AS source,
-        p2.actor_did AS target,
-        p2.created_at
+           p2.actor_did AS target,
+           p2.created_at
     FROM posts p1
-        INNER JOIN posts p2 ON p1.rkey = p2.parent_post_rkey
-        AND p1.actor_did = p2.parent_post_actor_did
-        AND p1.actor_did <> p2.actor_did
-    WHERE p2.parent_relationship IN ('r', 'q')
+    INNER JOIN posts p2 ON (
+        ( p1.rkey = p2.parent_post_rkey
+          AND p1.actor_did = p2.parent_post_actor_did
+        ) OR (p1.rkey = p2.quote_post_rkey
+          AND p1.actor_did = p2.quote_post_actor_did)
+        )
+    AND p1.actor_did <> p2.actor_did  -- This condition removes self-edges
 ),
 relationship_weights AS (
     SELECT source,
-        target,
-        EXP(
-            -0.01 * EXTRACT(
-                EPOCH
-                FROM AGE(NOW(), created_at)
-            ) / 86400
-        ) AS weight
+           target,
+           EXP(
+               -0.01 * EXTRACT(
+                   EPOCH
+                   FROM AGE(NOW(), created_at)
+               ) / 86400
+           ) AS weight
     FROM author_relationships
 )
 SELECT source,
-    target,
-    SUM(weight) AS weight
+       target,
+       SUM(weight) AS weight
 FROM relationship_weights
-GROUP BY source, target;
+GROUP BY source, target
+HAVING SUM(weight) > 2.0;
 """
 
 
