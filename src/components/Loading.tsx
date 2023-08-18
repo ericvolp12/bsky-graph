@@ -9,11 +9,6 @@ const Loading: FC<LoadingProps> = ({ message }) => {
     <div className="absolute top-0 left-0 w-screen h-screen bg-white z-10">
       <div className="flex flex-col items-center justify-center h-full">
         <div className="flex flex-col items-center justify-center">
-          {/* <img
-                    src="/bsky-logo.svg"
-                    className="h-16 w-auto mb-4"
-                    alt="bsky logo"
-                  /> */}
           <div className="text-2xl font-bold text-gray-900 text-center">
             {message}
           </div>

@@ -5,6 +5,7 @@ import TreeVisContainer from "./components/threads/TreeVis";
 import ThreadSearch from "./components/threads/ThreadSearch";
 import Stats from "./components/stats/Stats";
 import OptOut from "./components/opt_out/OptOut";
+import RepoWalker from "./components/repo_walker/RepoWalker";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/opt_out",
     element: <OptOut />,
+  },
+  {
+    path: "/walker",
+    element: <RepoWalker />,
   },
 ]);
 
