@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
+import { useSearchParams } from "react-router-dom";
 
 interface Subject {
   cid: string;
@@ -58,6 +59,7 @@ interface Repo {
 }
 
 const RepoWalker: FC<{}> = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<string>("");
   const [repo, setRepo] = useState<Repo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -68,6 +70,17 @@ const RepoWalker: FC<{}> = () => {
   useEffect(() => {
     document.title = "Bluesky Repo Walker";
   }, []);
+
+  useEffect(() => {
+    const userFromParams = searchParams.get("user");
+    if (userFromParams !== null && did === "" && repo === null) {
+      setCandidate(userFromParams);
+      resolveHandleOrDid(userFromParams).then((repoDid) => {
+        setDid(repoDid);
+        getRepo(repoDid);
+      });
+    }
+  }, [searchParams]);
 
   const getRepo = async (repoDid: string) => {
     setLoading(true);
@@ -134,6 +147,7 @@ const RepoWalker: FC<{}> = () => {
   };
 
   const resolveDid = async (did: string): Promise<string> => {
+    did = did.toLowerCase();
     if (handles.has(did)) {
       return handles.get(did) as string;
     }
@@ -164,7 +178,46 @@ const RepoWalker: FC<{}> = () => {
     }
   };
 
+  const resolveHandleOrDid = async (handleOrDid: string): Promise<string> => {
+    setError("");
+    let repoDid = "";
+    if (handleOrDid.startsWith("did:")) {
+      repoDid = handleOrDid;
+    } else {
+      try {
+        const resp = await fetch(
+          `https://plc.jazco.io/${handleOrDid.toLowerCase()}`
+        );
+
+        if (!resp.ok) {
+          let errorMsg = "An error occurred while resolving the handle.";
+          try {
+            const errorData = await resp.json();
+            if ("error" in errorData) {
+              errorMsg = errorData.error;
+              if (errorMsg === "redis: nil") {
+                errorMsg = "Handle not found.";
+              }
+            }
+          } catch (parseError: any) {
+            // If parsing fails, use the generic error message.
+          }
+          throw new Error(errorMsg);
+        }
+
+        const didData = await resp.json();
+        repoDid = didData.did;
+      } catch (e: any) {
+        setError(e.message);
+        setLoading(false);
+        return "";
+      }
+    }
+    return repoDid;
+  };
+
   const resolveDidBatch = async (dids: string[]) => {
+    dids = dids.map((did) => did.toLowerCase());
     try {
       const resp = await fetch(`https://plc.jazco.io/batch/by_did`, {
         method: "POST",
@@ -252,7 +305,7 @@ const RepoWalker: FC<{}> = () => {
                       } else {
                         try {
                           const resp = await fetch(
-                            `https://plc.jazco.io/${candidate}`
+                            `https://plc.jazco.io/${candidate.toLowerCase()}`
                           );
 
                           if (!resp.ok) {
