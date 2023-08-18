@@ -348,16 +348,28 @@ const RepoWalker: FC<{}> = () => {
                           </h3>
                           <div className="mt-2 max-w-xl text-sm text-gray-900 text-left">
                             <p className="text-xl">
-                              Posts: {repo?.posts.length.toLocaleString()}
+                              <a href="#posts" className="hover:underline">
+                                Posts
+                              </a>
+                              : {repo?.posts.length.toLocaleString()}
                             </p>
                             <p className="text-xl">
-                              Reposts: {repo?.reposts.length.toLocaleString()}
+                              <a href="#reposts" className="hover:underline">
+                                Reposts
+                              </a>
+                              : {repo?.reposts.length.toLocaleString()}
                             </p>
                             <p className="text-xl">
-                              Likes: {repo?.likes.length.toLocaleString()}
+                              <a href="#likes" className="hover:underline">
+                                Likes
+                              </a>
+                              : {repo?.likes.length.toLocaleString()}
                             </p>
                             <p className="text-xl">
-                              Follows: {repo?.follows.length.toLocaleString()}
+                              <a href="follows" className="hover:underline">
+                                Follows
+                              </a>
+                              : {repo?.follows.length.toLocaleString()}
                             </p>
                             <p className="text-xl">
                               Blocks: {repo?.blocks.length.toLocaleString()}
@@ -370,7 +382,9 @@ const RepoWalker: FC<{}> = () => {
                   <div className="flex flex-wrap">
                     <div className="mt-6 max-w-xl flex overflow-hidden flex-col basis-1/2">
                       <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        Posts
+                        <a id="posts" href="#posts">
+                          Posts
+                        </a>
                       </h3>
                       <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
                         {repo?.posts.map((post, idx) => (
@@ -398,7 +412,9 @@ const RepoWalker: FC<{}> = () => {
                         ))}
                       </ol>
                       <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        Follows
+                        <a id="follows" href="#follows">
+                          Follows
+                        </a>
                       </h3>
                       <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
                         {repo?.follows.map((follow, idx) => (
@@ -427,7 +443,9 @@ const RepoWalker: FC<{}> = () => {
                         ))}
                       </ol>
                       <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        Reposts
+                        <a id="reposts" href="#reposts">
+                          Reposts
+                        </a>
                       </h3>
                       <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
                         {repo?.reposts.map((repost, idx) => (
@@ -466,7 +484,9 @@ const RepoWalker: FC<{}> = () => {
                     </div>
                     <div className="mt-6 max-w-xl flex overflow-hidden flex-col basis-1/2">
                       <h3 className="text-2xl font-medium text-gray-900 text-right">
-                        Likes
+                        <a id="likes" href="#likes">
+                          Likes
+                        </a>
                       </h3>
                       <ol className="border-r border-neutral-300 dark:border-neutral-500 mt-2 mr-2">
                         {repo?.likes.map((like, idx) => (
