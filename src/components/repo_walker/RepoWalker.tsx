@@ -300,6 +300,7 @@ const RepoWalker: FC<{}> = () => {
                       e.preventDefault();
                       setError("");
                       let repoDid = "";
+                      setSearchParams({ user: candidate.toLowerCase() });
                       if (candidate.startsWith("did:")) {
                         repoDid = candidate;
                       } else {
@@ -419,7 +420,7 @@ const RepoWalker: FC<{}> = () => {
                               : {repo?.likes.length.toLocaleString()}
                             </p>
                             <p className="text-xl">
-                              <a href="follows" className="hover:underline">
+                              <a href="#follows" className="hover:underline">
                                 Follows
                               </a>
                               : {repo?.follows.length.toLocaleString()}
