@@ -266,11 +266,12 @@ const RepoWalker: FC<{}> = () => {
               </div>
             )}
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
                 Bluesky Walker
               </h1>
               <p className="mt-4 text-lg leading-6 text-gray-500">
-                This is a simple tool to help you explore a Bluesky repo.
+                A tool to help you explore the public contents of a Bluesky
+                repo.
               </p>
               <form
                 className="mt-6 sm:flex sm:items-center max-w-2xl mx-auto"
@@ -285,7 +286,7 @@ const RepoWalker: FC<{}> = () => {
                     name="threadURL"
                     id="threadURL"
                     className="peer relative col-start-1 row-start-1 border-0 bg-transparent py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                    placeholder="Enter a BlueSky Handle or DID"
+                    placeholder="Enter a Bluesky Handle or DID"
                     value={candidate}
                     onChange={(e) => setCandidate(e.target.value)}
                   />
