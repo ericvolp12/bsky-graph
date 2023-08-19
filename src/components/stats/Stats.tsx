@@ -108,7 +108,7 @@ const Stats: FC<{}> = () => {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-7xl py-0 sm:py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl py-4 sm:py-24 sm:px-6 lg:px-8">
         <div className="relative isolate overflow-hidden bg-gray-50 px-3 sm:px-16 py-4 sm:py-24 text-center shadow-md sm:rounded-3xl">
           <div className="mx-auto max-w-7xl">
             {error && (

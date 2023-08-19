@@ -14,7 +14,7 @@ const ThreadSearch: React.FC<{}> = () => {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+      <div className="mx-auto max-w-7xl py-4 sm:py-24 sm:px-6 lg:px-8">
         <div className="relative isolate overflow-hidden bg-gray-50 px-6 py-24 text-center shadow-md sm:rounded-3xl sm:px-16">
           <div className="mx-auto max-w-md sm:max-w-3xl">
             {error && (
