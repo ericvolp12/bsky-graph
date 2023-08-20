@@ -1,7 +1,7 @@
-import { FC, useEffect, useState } from "react";
-import ErrorMsg from "../threads/ErrorMsg";
-import { useSearchParams } from "react-router-dom";
 import { CloudArrowDownIcon } from "@heroicons/react/24/solid";
+import { FC, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import ErrorMsg from "../threads/ErrorMsg";
 
 interface Subject {
   cid: string;
@@ -299,7 +299,7 @@ const RepoWalker: FC<{}> = () => {
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl py-4 sm:py-24 sm:px-6 lg:px-8">
-        <div className="relative isolate overflow-hidden bg-gray-50 px-3 sm:px-16 py-4 sm:py-24 text-center shadow-md sm:rounded-3xl">
+        <div className="relative isolate overflow-hidden bg-gray-50 px-3 sm:px-6 py-4 sm:py-24 shadow-md sm:rounded-3xl">
           <div className="mx-auto max-w-7xl">
             {error && (
               <div className="text-left mb-2">
@@ -307,10 +307,10 @@ const RepoWalker: FC<{}> = () => {
               </div>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl text-center">
                 Bluesky Walker
               </h1>
-              <p className="mt-4 text-lg leading-6 text-gray-500">
+              <p className="mt-4 text-lg leading-6 text-gray-500 text-center">
                 A tool to help you explore the public contents of a Bluesky repo
               </p>
               <form
@@ -428,11 +428,8 @@ const RepoWalker: FC<{}> = () => {
                 <div>
                   <div className="flex gap-2 justify-center">
                     <div className="mt-6 w-auto flex">
-                      <div className="bg-white overflow-hidden shadow rounded-lg">
+                      <div className="bg-white overflow-hidden shadow rounded-lg flex flex-wrap justify-center">
                         <div className="px-4 py-5 sm:p-6 sm:px-10">
-                          <h3 className="text-lg leading-6 font-medium text-gray-500">
-                            Profile
-                          </h3>
                           <div className="mt-2 max-w-xl text-sm text-gray-900">
                             <p className="text-xl">
                               {repo?.profile.content.displayName}
@@ -449,190 +446,228 @@ const RepoWalker: FC<{}> = () => {
                             </p>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="mt-6 w-auto flex">
-                      <div className="bg-white overflow-hidden shadow rounded-lg px-5">
                         <div className="px-4 py-5 sm:p-6">
-                          <h3 className="text-lg leading-6 font-medium text-gray-500">
-                            Stats
-                          </h3>
-                          <div className="mt-2 max-w-xl text-sm text-gray-900 text-left">
-                            <p className="text-xl">
-                              <a href="#posts" className="hover:underline">
-                                Posts
-                              </a>
-                              : {repo?.posts.length.toLocaleString()}
-                            </p>
-                            <p className="text-xl">
-                              <a href="#reposts" className="hover:underline">
-                                Reposts
-                              </a>
-                              : {repo?.reposts.length.toLocaleString()}
-                            </p>
-                            <p className="text-xl">
-                              <a href="#likes" className="hover:underline">
-                                Likes
-                              </a>
-                              : {repo?.likes.length.toLocaleString()}
-                            </p>
-                            <p className="text-xl">
-                              <a href="#follows" className="hover:underline">
-                                Follows
-                              </a>
-                              : {repo?.follows.length.toLocaleString()}
-                            </p>
-                            <p className="text-xl">
-                              Blocks: {repo?.blocks.length.toLocaleString()}
-                            </p>
+                          <div className="mt-2 max-w-xl text-sm text-gray-900 text-left grid grid-cols-2">
+                            <div>
+                              <p className="text-xl">
+                                <a href="#posts" className="hover:underline">
+                                  Posts
+                                </a>
+                              </p>
+                              <p className="text-xl">
+                                <a href="#reposts" className="hover:underline">
+                                  Reposts
+                                </a>
+                              </p>
+                              <p className="text-xl">
+                                <a href="#likes" className="hover:underline">
+                                  Likes
+                                </a>
+                              </p>
+                              <p className="text-xl">
+                                <a href="#follows" className="hover:underline">
+                                  Follows
+                                </a>
+                              </p>
+                              <p className="text-xl">Blocks</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xl">
+                                {repo?.posts.length.toLocaleString()}
+                              </p>
+                              <p className="text-xl">
+                                {repo?.reposts.length.toLocaleString()}
+                              </p>
+                              <p className="text-xl">
+                                {repo?.likes.length.toLocaleString()}
+                              </p>
+                              <p className="text-xl">
+                                {repo?.follows.length.toLocaleString()}
+                              </p>
+                              <p className="text-xl">
+                                {repo?.blocks.length.toLocaleString()}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap">
-                    <div className="mt-6 max-w-xl flex overflow-hidden flex-col basis-1/2">
-                      <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        <a id="posts" href="#posts">
+                  <div className="flex flex-wrap gap-2">
+                    <div className="mt-6 max-w-xl flex overflow-hidden flex-col ">
+                      <div className="p-5 mb-4 border border-gray-100 rounded-lg bg-white  ">
+                        <a
+                          id="posts"
+                          href="#posts"
+                          className="text-lg font-semibold text-gray-900 "
+                        >
                           Posts
                         </a>
-                      </h3>
-                      <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
-                        {repo?.posts.map((post, idx) => (
-                          <li key={idx}>
-                            <div className="flex-start flex items-center pt-3">
-                              <div className="-ml-[5px] mr-3 h-[9px] w-[9px] rounded-full bg-neutral-300"></div>
-                              <p className="text-sm text-gray-400 ">
-                                <a
-                                  href={`https://bsky.app/profile/${
-                                    post.uri.split("/")[2]
-                                  }/post/${post.uri.split("/")[4]}`}
-                                  className="hover:underline"
-                                  target="_blank"
-                                >
-                                  {post.content.createdAt}
-                                </a>
-                              </p>
-                            </div>
-                            <div className="mb-6 ml-4 mt-2 text-left">
-                              <p className="mb-3 text-gray-800 break-normal">
-                                {post.content.text}
-                              </p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
-                      <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        <a id="follows" href="#follows">
+                        <ol className="mt-3 divide-y divider-gray-200 ">
+                          {repo?.posts.map((post, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={`https://bsky.app/profile/${did}/post/${
+                                  post.uri.split("/")[4]
+                                }`}
+                                target="_blank"
+                                className="items-center block p-3 sm:flex hover:bg-gray-50 "
+                              >
+                                <div className="text-gray-600 ">
+                                  <div className="text-base font-normal">
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.get(did)}
+                                    </span>
+                                  </div>
+                                  <div className="text-sm font-normal">
+                                    {post.content.text}
+                                  </div>
+                                  <span className="inline-flex items-center text-xs font-normal text-gray-500 ">
+                                    {post.content.createdAt}
+                                  </span>
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                      <div className="p-5 mb-4 border border-gray-100 rounded-lg bg-white  ">
+                        <a
+                          id="follows"
+                          href="#follows"
+                          className="text-lg font-semibold text-gray-900 "
+                        >
                           Follows
                         </a>
-                      </h3>
-                      <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
-                        {repo?.follows.map((follow, idx) => (
-                          <li key={idx}>
-                            <div className="flex-start flex items-center pt-3">
-                              <div className="-ml-[5px] mr-3 h-[9px] w-[9px] rounded-full bg-neutral-300"></div>
-                              <p className="text-sm text-gray-400 ">
-                                <a
-                                  href={`https://bsky.app/profile/${follow.content.subject}`}
-                                  className="hover:underline"
-                                  target="_blank"
-                                >
-                                  {follow.content.createdAt}
-                                </a>
-                              </p>
-                            </div>
-                            <div className="mb-6 ml-4 mt-2 text-left">
-                              <p className="mb-3 text-gray-800 break-normal">
-                                Followed{" "}
-                                {handles.has(follow.content.subject)
-                                  ? handles.get(follow.content.subject)
-                                  : follow.content.subject}
-                              </p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
-                      <h3 className="text-2xl font-medium text-gray-900 text-left">
-                        <a id="reposts" href="#reposts">
+                        <ol className="mt-3 divide-y divider-gray-200 ">
+                          {repo?.follows.map((follow, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={`https://bsky.app/profile/${follow.content.subject}`}
+                                target="_blank"
+                                className="items-center block p-3 sm:flex hover:bg-gray-50 "
+                              >
+                                <div className="text-gray-600 ">
+                                  <div className="text-base font-normal">
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.get(did)}
+                                    </span>{" "}
+                                    followed{" "}
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.has(follow.content.subject)
+                                        ? handles.get(follow.content.subject)
+                                        : follow.content.subject}
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center text-xs font-normal text-gray-500 ">
+                                    {follow.content.createdAt}
+                                  </span>
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                      <div className="p-5 mb-4 border border-gray-100 rounded-lg bg-white  ">
+                        <a
+                          id="reposts"
+                          href="#reposts"
+                          className="text-lg font-semibold text-gray-900 "
+                        >
                           Reposts
                         </a>
-                      </h3>
-                      <ol className="border-l border-neutral-300 dark:border-neutral-500 mt-2 ml-2">
-                        {repo?.reposts.map((repost, idx) => (
-                          <li key={idx}>
-                            <div className="flex-start flex items-center pt-3">
-                              <div className="-ml-[5px] mr-3 h-[9px] w-[9px] rounded-full bg-neutral-300"></div>
-                              <p className="text-sm text-gray-400 ">
-                                <a
-                                  href={`https://bsky.app/profile/${
-                                    repost.content.subject.uri.split("/")[2]
-                                  }/post/${
-                                    repost.content.subject.uri.split("/")[4]
-                                  }`}
-                                  className="hover:underline"
-                                  target="_blank"
-                                >
-                                  {repost.content.createdAt}
-                                </a>
-                              </p>
-                            </div>
-                            <div className="mb-6 ml-4 mt-2 text-left">
-                              <p className="mb-3 text-gray-800 break-normal">
-                                Post by{" "}
-                                {handles.has(
+                        <ol className="mt-3 divide-y divider-gray-200 ">
+                          {repo?.reposts.map((repost, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={`https://bsky.app/profile/${
                                   repost.content.subject.uri.split("/")[2]
-                                )
-                                  ? handles.get(
-                                      repost.content.subject.uri.split("/")[2]
-                                    )
-                                  : repost.content.subject.uri.split("/")[2]}
-                              </p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
+                                }/post/${
+                                  repost.content.subject.uri.split("/")[4]
+                                }`}
+                                target="_blank"
+                                className="items-center block p-3 sm:flex hover:bg-gray-50 "
+                              >
+                                <div className="text-gray-600 ">
+                                  <div className="text-base font-normal">
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.get(did)}
+                                    </span>{" "}
+                                    reposted a post by{" "}
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.has(
+                                        repost.content.subject.uri.split("/")[2]
+                                      )
+                                        ? handles.get(
+                                            repost.content.subject.uri.split(
+                                              "/"
+                                            )[2]
+                                          )
+                                        : repost.content.subject.uri.split(
+                                            "/"
+                                          )[2]}
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center text-xs font-normal text-gray-500 ">
+                                    {repost.content.createdAt}
+                                  </span>
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
                     </div>
-                    <div className="mt-6 max-w-xl flex overflow-hidden flex-col basis-1/2">
-                      <h3 className="text-2xl font-medium text-gray-900 text-right">
-                        <a id="likes" href="#likes">
+                    <div className="mt-6 max-w-xl flex overflow-hidden flex-col">
+                      <div className="p-5 mb-4 border border-gray-100 rounded-lg bg-white  ">
+                        <a
+                          id="likes"
+                          href="#likes"
+                          className="text-lg font-semibold text-gray-900 "
+                        >
                           Likes
                         </a>
-                      </h3>
-                      <ol className="border-r border-neutral-300 dark:border-neutral-500 mt-2 mr-2">
-                        {repo?.likes.map((like, idx) => (
-                          <li key={idx}>
-                            <div className="items-center pt-3 text-right flex justify-end ml-auto">
-                              <p className="text-sm text-gray-400">
-                                <a
-                                  href={`https://bsky.app/profile/${
-                                    like.content.subject.uri.split("/")[2]
-                                  }/post/${
-                                    like.content.subject.uri.split("/")[4]
-                                  }`}
-                                  className="hover:underline"
-                                  target="_blank"
-                                >
-                                  {like.content.createdAt}
-                                </a>
-                              </p>
-                              <div className="-mr-[5px] ml-3 h-[9px] w-[9px] rounded-full bg-neutral-300"></div>
-                            </div>
-                            <div className="mb-6 mr-4 mt-2 text-right">
-                              <p className="mb-3 text-gray-800 break-normal">
-                                Post by{" "}
-                                {handles.has(
+                        <ol className="mt-3 divide-y divider-gray-200 ">
+                          {repo?.likes.map((like, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={`https://bsky.app/profile/${
                                   like.content.subject.uri.split("/")[2]
-                                )
-                                  ? handles.get(
-                                      like.content.subject.uri.split("/")[2]
-                                    )
-                                  : like.content.subject.uri.split("/")[2]}
-                              </p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
+                                }/post/${
+                                  like.content.subject.uri.split("/")[4]
+                                }`}
+                                target="_blank"
+                                className="items-center block p-3 sm:flex hover:bg-gray-50 "
+                              >
+                                <div className="text-gray-600 ">
+                                  <div className="text-base font-normal">
+                                    <span className="font-medium text-gray-900 ">
+                                      {handles.get(did)}
+                                    </span>{" "}
+                                    liked a post by{" "}
+                                    <span className="font-medium text-gray-900 break-all">
+                                      {handles.has(
+                                        like.content.subject.uri.split("/")[2]
+                                      )
+                                        ? handles.get(
+                                            like.content.subject.uri.split(
+                                              "/"
+                                            )[2]
+                                          )
+                                        : like.content.subject.uri.split(
+                                            "/"
+                                          )[2]}
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center text-xs font-normal text-gray-500 ">
+                                    {like.content.createdAt}
+                                  </span>
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
                     </div>
                   </div>
                 </div>
