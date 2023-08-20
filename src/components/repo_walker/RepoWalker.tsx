@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
 import { useSearchParams } from "react-router-dom";
+import { CloudArrowDownIcon } from "@heroicons/react/24/solid";
 
 interface Subject {
   cid: string;
@@ -63,6 +64,7 @@ const RepoWalker: FC<{}> = () => {
   const [error, setError] = useState<string>("");
   const [repo, setRepo] = useState<Repo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [downloading, setDownloading] = useState<boolean>(false);
   const [candidate, setCandidate] = useState<string>("");
   const [did, setDid] = useState<string>("");
   const [handles, setHandles] = useState<Map<string, string>>(new Map());
@@ -255,6 +257,45 @@ const RepoWalker: FC<{}> = () => {
     }
   };
 
+  const handleButtonClick = async (e: any): Promise<string> => {
+    e.preventDefault();
+    setError("");
+    let repoDid = "";
+    if (candidate.startsWith("did:")) {
+      repoDid = candidate;
+    } else {
+      try {
+        const resp = await fetch(
+          `https://plc.jazco.io/${candidate.toLowerCase()}`
+        );
+
+        if (!resp.ok) {
+          let errorMsg = "An error occurred while resolving the handle.";
+          try {
+            const errorData = await resp.json();
+            if ("error" in errorData) {
+              errorMsg = errorData.error;
+              if (errorMsg === "redis: nil") {
+                errorMsg = "Handle not found.";
+              }
+            }
+          } catch (parseError: any) {
+            // If parsing fails, use the generic error message.
+          }
+          throw new Error(errorMsg);
+        }
+
+        const didData = await resp.json();
+        repoDid = didData.did;
+      } catch (e: any) {
+        setError(e.message);
+        setLoading(false);
+        return "";
+      }
+    }
+    return repoDid;
+  };
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl py-4 sm:py-24 sm:px-6 lg:px-8">
@@ -270,8 +311,7 @@ const RepoWalker: FC<{}> = () => {
                 Bluesky Walker
               </h1>
               <p className="mt-4 text-lg leading-6 text-gray-500">
-                A tool to help you explore the public contents of a Bluesky
-                repo.
+                A tool to help you explore the public contents of a Bluesky repo
               </p>
               <form
                 className="mt-6 sm:flex sm:items-center max-w-2xl mx-auto"
@@ -295,51 +335,16 @@ const RepoWalker: FC<{}> = () => {
                     aria-hidden="true"
                   />
                 </div>
-                <div className="mt-3 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
+                <div className="mt-3 sm:ml-4 sm:mt-0 sm:flex-shrink-0 flex">
                   <button
                     onClick={async (e) => {
                       e.preventDefault();
-                      setError("");
-                      let repoDid = "";
-                      setSearchParams({ user: candidate.toLowerCase() });
-                      if (candidate.startsWith("did:")) {
-                        repoDid = candidate;
-                      } else {
-                        try {
-                          const resp = await fetch(
-                            `https://plc.jazco.io/${candidate.toLowerCase()}`
-                          );
-
-                          if (!resp.ok) {
-                            let errorMsg =
-                              "An error occurred while resolving the handle.";
-                            try {
-                              const errorData = await resp.json();
-                              if ("error" in errorData) {
-                                errorMsg = errorData.error;
-                                if (errorMsg === "redis: nil") {
-                                  errorMsg = "Handle not found.";
-                                }
-                              }
-                            } catch (parseError: any) {
-                              // If parsing fails, use the generic error message.
-                            }
-                            throw new Error(errorMsg);
-                          }
-
-                          const didData = await resp.json();
-                          console.log(didData);
-                          repoDid = didData.did;
-                        } catch (e: any) {
-                          setError(e.message);
-                          setLoading(false);
-                          return;
-                        }
-                      }
+                      setLoading(true);
+                      const repoDid = await handleButtonClick(e);
                       setDid(repoDid);
                       getRepo(repoDid);
                     }}
-                    className="block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="block mr-2 w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     {loading ? (
                       <svg
@@ -363,7 +368,58 @@ const RepoWalker: FC<{}> = () => {
                         />
                       </svg>
                     ) : (
-                      "Walk Repo"
+                      <span className="whitespace-nowrap">Explore Repo</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setDownloading(true);
+                      const repoDid = await handleButtonClick(e);
+                      const resp = await fetch(
+                        `https://bsky.social/xrpc/com.atproto.sync.getCheckout?did=${repoDid}`,
+                        {
+                          headers: {
+                            "Content-Type": "application/vnd.ipld.car",
+                          },
+                        }
+                      );
+
+                      const blob = await resp.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `${repoDid}.car`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      setDownloading(false);
+                    }}
+                    className="block mr-2 w-full rounded-md bg-green-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                  >
+                    {downloading ? (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white inline-block"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                    ) : (
+                      <CloudArrowDownIcon className="h-5 w-5 inline-block" />
                     )}
                   </button>
                 </div>
