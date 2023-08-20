@@ -429,7 +429,7 @@ const RepoWalker: FC<{}> = () => {
                   <div className="flex gap-2 justify-center">
                     <div className="mt-6 w-auto flex">
                       <div className="bg-white overflow-hidden shadow rounded-lg flex flex-wrap justify-center">
-                        <div className="px-4 py-5 sm:p-6 sm:px-10">
+                        <div className="py-2 pl-6 pr-4">
                           <div className="mt-2 max-w-xl text-sm text-gray-900">
                             <p className="text-xl">
                               {repo?.profile.content.displayName}
@@ -446,47 +446,37 @@ const RepoWalker: FC<{}> = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="px-4 py-5 sm:p-6">
+                        <div className="py-2 pr-6 pl-4">
                           <div className="mt-2 max-w-xl text-sm text-gray-900 text-left grid grid-cols-2">
                             <div>
-                              <p className="text-xl">
+                              <p>
                                 <a href="#posts" className="hover:underline">
                                   Posts
                                 </a>
                               </p>
-                              <p className="text-xl">
+                              <p>
                                 <a href="#reposts" className="hover:underline">
                                   Reposts
                                 </a>
                               </p>
-                              <p className="text-xl">
+                              <p>
                                 <a href="#likes" className="hover:underline">
                                   Likes
                                 </a>
                               </p>
-                              <p className="text-xl">
+                              <p>
                                 <a href="#follows" className="hover:underline">
                                   Follows
                                 </a>
                               </p>
-                              <p className="text-xl">Blocks</p>
+                              <p>Blocks</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xl">
-                                {repo?.posts.length.toLocaleString()}
-                              </p>
-                              <p className="text-xl">
-                                {repo?.reposts.length.toLocaleString()}
-                              </p>
-                              <p className="text-xl">
-                                {repo?.likes.length.toLocaleString()}
-                              </p>
-                              <p className="text-xl">
-                                {repo?.follows.length.toLocaleString()}
-                              </p>
-                              <p className="text-xl">
-                                {repo?.blocks.length.toLocaleString()}
-                              </p>
+                              <p>{repo?.posts.length.toLocaleString()}</p>
+                              <p>{repo?.reposts.length.toLocaleString()}</p>
+                              <p>{repo?.likes.length.toLocaleString()}</p>
+                              <p>{repo?.follows.length.toLocaleString()}</p>
+                              <p>{repo?.blocks.length.toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
