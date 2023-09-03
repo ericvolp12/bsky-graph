@@ -104,14 +104,14 @@ clusterRepresentatives.set("johnmichiemusic.com", {
   dbIndex: 509,
 });
 
-clusterRepresentatives.set(
-  "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
-  {
-    label: "TPOT",
-    prio: 4,
-    dbIndex: 507,
-  }
-);
+// clusterRepresentatives.set(
+//   "deepfates.com.deepfates.com.deepfates.com.deepfates.com.deepfates.com",
+//   {
+//     label: "TPOT",
+//     prio: 4,
+//     dbIndex: 507,
+//   }
+// );
 clusterRepresentatives.set("estrogenempress.gay", {
   label: "Trans + Queer Shitposters",
   prio: 4,

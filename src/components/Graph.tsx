@@ -73,7 +73,7 @@ knownClusterColorMappings.set("Hellthread Metacluster", "#f07b3c");
 knownClusterColorMappings.set("Front-end Developers", "#cf8d46");
 knownClusterColorMappings.set("BSky English Language Metacluster", "#018b7c");
 knownClusterColorMappings.set("Goose Metacluster", "#870566	");
-knownClusterColorMappings.set("TPOT", "#01aee3");
+// knownClusterColorMappings.set("TPOT", "#01aee3");
 knownClusterColorMappings.set("Trans + Queer Shitposters", "#7b61ff");
 knownClusterColorMappings.set("Alf Minicluster", "#f00006");
 knownClusterColorMappings.set("Furries", "#1ae828");
