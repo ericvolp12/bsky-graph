@@ -104,10 +104,10 @@ const Stats: FC<{}> = () => {
 
   useEffect(() => {
     refreshStats();
-    // Refresh stats every 5 minutes
+    // Refresh stats every 30 seconds
     const interval = setInterval(() => {
       refreshStats();
-    }, 5 * 60 * 1000);
+    }, 30 * 1000);
 
     return () => clearInterval(interval);
   }, []);
