@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Col, DailyDatapoint, DataVolumeBarChart } from "./Charts";
+import CountUp from "react-countup";
 
 interface Percentile {
   percentile: number;
@@ -141,7 +142,7 @@ const Stats: FC<{}> = () => {
                         Users
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.total_users.toLocaleString()}
+                        <CountUp preserveValue={true} end={stats.total_users} />
                       </dd>
                     </div>
                   )}
