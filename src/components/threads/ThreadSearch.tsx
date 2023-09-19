@@ -9,7 +9,7 @@ const ThreadSearch: React.FC<{}> = () => {
 
   useEffect(() => {
     document.title =
-      "Thread Visualizer Search for BlueSky by Jaz (jaz.bsky.social)";
+      "Thread Visualizer Search for Bluesky by Jaz (jaz.bsky.social)";
   }, []);
 
   return (
@@ -48,7 +48,7 @@ const ThreadSearch: React.FC<{}> = () => {
                     name="threadURL"
                     id="threadURL"
                     className="peer relative col-start-1 row-start-1 border-0 bg-transparent py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                    placeholder="Enter a BlueSky Post URL"
+                    placeholder="Enter a Bluesky Post URL"
                     value={threadURL}
                     onChange={(e) => setThreadURL(e.target.value)}
                   />

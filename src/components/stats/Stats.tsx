@@ -71,7 +71,7 @@ const Stats: FC<{}> = () => {
   ]);
 
   useEffect(() => {
-    document.title = "Stats for BlueSky by Jaz (jaz.bsky.social)";
+    document.title = "Stats for Bluesky by Jaz (jaz.bsky.social)";
   }, []);
 
   const getMillionString = (num: number) => {
@@ -125,13 +125,13 @@ const Stats: FC<{}> = () => {
             )}
             <div>
               <div className="text-3xl font-bold text-gray-900  sm:text-4xl">
-                BlueSky Post Count and Author Stats
+                Bluesky Post Count and Author Stats
               </div>
               <div className="lg:mt-8 mt-2">
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="text-gray-700 text-lg font-semibold">
-                      Aggregate stats for all posts in Jaz's BlueSky index.
+                      Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
                   </div>
                 </div>
@@ -370,7 +370,7 @@ const Stats: FC<{}> = () => {
                   Post Data Collection started May 1st, 2023
                 </div>
                 <div className="text-gray-500 text-xs">
-                  Total User Count is directly from the BlueSky API
+                  Total User Count is directly from the Bluesky API
                 </div>
                 <div className="text-gray-500 text-xs">
                   Large bot accounts are excluded from statistics and Top

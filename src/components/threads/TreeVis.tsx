@@ -121,7 +121,7 @@ const TreeVisContainer: React.FC<{}> = () => {
   const [quoteMode, setQuoteMode] = React.useState<boolean>(false);
 
   useEffect(() => {
-    document.title = "Thread Visualizer for BlueSky by Jaz (jaz.bsky.social)";
+    document.title = "Thread Visualizer for Bluesky by Jaz (jaz.bsky.social)";
   }, []);
 
   const ThreadTree: React.FC = () => {
