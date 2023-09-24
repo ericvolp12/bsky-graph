@@ -148,38 +148,6 @@ const RepoWalker: FC<{}> = () => {
     }
   };
 
-  const resolveDid = async (did: string): Promise<string> => {
-    did = did.toLowerCase();
-    if (handles.has(did)) {
-      return handles.get(did) as string;
-    }
-
-    try {
-      const resp = await fetch(`https://plc.jazco.io/${did}`);
-      if (!resp.ok) {
-        let errorMsg = "An error occurred while resolving the handle.";
-        try {
-          const errorData = await resp.json();
-          if ("error" in errorData) {
-            errorMsg = errorData.error;
-            if (errorMsg === "redis: nil") {
-              errorMsg = "Handle not found.";
-            }
-          }
-        } catch (parseError: any) {
-          // If parsing fails, use the generic error message.
-        }
-        throw new Error(errorMsg);
-      }
-
-      const didData = await resp.json();
-      handles.set(did, didData.handle);
-      return didData.handle;
-    } catch (e: any) {
-      throw new Error(e.message);
-    }
-  };
-
   const resolveHandleOrDid = async (handleOrDid: string): Promise<string> => {
     setError("");
     let repoDid = "";
@@ -341,6 +309,7 @@ const RepoWalker: FC<{}> = () => {
                       e.preventDefault();
                       setLoading(true);
                       const repoDid = await handleButtonClick(e);
+                      setSearchParams({ user: candidate.toLowerCase() });
                       setDid(repoDid);
                       getRepo(repoDid);
                     }}
