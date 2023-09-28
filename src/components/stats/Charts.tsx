@@ -61,7 +61,7 @@ export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
       tickSize: 5,
       tickPadding: 5,
       tickRotation: -25,
-      legend: "Records",
+      legend: "Unique Users",
       legendPosition: "middle",
       legendOffset: -45,
       format: (v) => {
