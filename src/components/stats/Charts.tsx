@@ -25,9 +25,9 @@ export interface ChartProps {
 }
 
 const labelMap = {
-  num_likes: "Likes",
-  num_follows: "Follows",
-  num_posts: "Posts",
+  num_likers: "Unique Likers",
+  num_followers: "Unique Followers",
+  num_posters: "Unique Posters",
 };
 
 type labelKey = keyof typeof labelMap;

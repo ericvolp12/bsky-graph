@@ -51,20 +51,20 @@ const Stats: FC<{}> = () => {
   const [showTopPosters, setShowTopPosters] = useState<boolean>(false);
   const [cols, setCols] = useState<Col[]>([
     {
-      key: "num_likes",
-      label: "Likes",
+      key: "num_likers",
+      label: "Likers",
       color: "rgb(232, 193, 160)",
       hidden: false,
     },
     {
-      key: "num_follows",
-      label: "Follows",
+      key: "num_followers",
+      label: "Followers",
       color: "rgb(244, 117, 96)",
       hidden: false,
     },
     {
-      key: "num_posts",
-      label: "Posts",
+      key: "num_posters",
+      label: "Posters",
       color: "rgb(241, 225, 91)",
       hidden: false,
     },
