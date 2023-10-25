@@ -15,7 +15,7 @@ QUERY = """
 WITH author_relationships AS (
     SELECT p1.actor_did AS source,
            p2.actor_did AS target,
-           p2.created_at
+           p2.inserted_at
     FROM posts p1
     INNER JOIN posts p2 ON (
         ( p1.rkey = p2.parent_post_rkey
@@ -31,7 +31,7 @@ relationship_weights AS (
            EXP(
                -0.01 * EXTRACT(
                    EPOCH
-                   FROM AGE(NOW(), created_at)
+                   FROM AGE(NOW(), inserted_at)
                ) / 86400
            ) AS weight
     FROM author_relationships
