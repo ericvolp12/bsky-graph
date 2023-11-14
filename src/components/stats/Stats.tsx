@@ -91,10 +91,13 @@ const Stats: FC<{}> = () => {
         res.daily_data = res.daily_data.filter((d) => {
           return (
             new Date(d.date).getTime() >
-              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() &&
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() &&
             new Date(d.date).getTime() <
-              new Date(Date.now() - 24 * 60 * 60 * 1000).getTime()
+            new Date(Date.now() - 24 * 60 * 60 * 1000).getTime()
           );
+        });
+        res.daily_data = res.daily_data.sort((a, b) => {
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
         });
         setStats(res);
       })
@@ -344,13 +347,12 @@ const Stats: FC<{}> = () => {
                               </div>
                               <div className="ml-2 flex-shrink-0 flex">
                                 <span
-                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    badgeClasses[
-                                      idx < badgeClasses.length
-                                        ? idx
-                                        : badgeClasses.length - 1
-                                    ]
-                                  }`}
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClasses[
+                                    idx < badgeClasses.length
+                                      ? idx
+                                      : badgeClasses.length - 1
+                                  ]
+                                    }`}
                                 >
                                   {poster.post_count.toLocaleString()}
                                 </span>
