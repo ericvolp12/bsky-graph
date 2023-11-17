@@ -337,7 +337,15 @@ const RepoCleanup: FC<{}> = () => {
                                     </div>
                                 </div>
                             )}
-                            <div className="mt-3 sm:ml-4 sm:flex-shrink-0 flex">
+                            <div className="mt-3 text-sm w-full leading-6 text-gray-500 text-center">
+                                <p className="text-xl text-gray-700 mb-2">Things to Keep in Mind</p>
+                                <p>Bluesky has creation rate limits of ~11,000 posts/likes/reposts per day and ~1,300 per hour per account</p>
+                                <p>Deleting content counts as 1/3 of a post/like/repost</p>
+                                <p>This tool deletes up to 4,000 records per hour and 30,000 per day</p>
+                                <p>You should still be able to like/post/repost normally unless you're <i>very</i> active</p>
+                                <p>If you start getting "Rate Limit" related errors, you can come back and cancel your job</p>
+                            </div>
+                            <div className="mt-4 sm:ml-4 sm:flex-shrink-0 flex">
                                 <button
                                     onClick={async (e) => {
                                         setError("");
