@@ -129,6 +129,27 @@ const RepoCleanup: FC<{}> = () => {
         setLoading("");
     };
 
+    const cancelJob = async () => {
+        setLoading("cancel");
+        await fetch(`${endpoint}?job_id=${jobID}`, {
+            method: "DELETE",
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                console.log(data);
+                if (data.error) {
+                    setError(data.error);
+                } else {
+                    getJobStatus(jobID);
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+                setError(err.error);
+            });
+        setLoading("");
+    }
+
     const onCheck = (
         e: React.ChangeEvent<HTMLInputElement>,
         checkTarget: string
@@ -444,6 +465,38 @@ const RepoCleanup: FC<{}> = () => {
                                             </svg>
                                         ) : (
                                             <span className="whitespace-nowrap">Check Status</span>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            cancelJob();
+                                        }}
+                                        className="block mr-2 w-full rounded-md bg-red-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                                    >
+                                        {loading === "cancel" ? (
+                                            <svg
+                                                className="animate-spin h-5 w-5 text-white inline-block"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                />
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                                />
+                                            </svg>
+                                        ) : (
+                                            <span className="whitespace-nowrap">Cancel Job</span>
                                         )}
                                     </button>
                                 </div>
