@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cosmograph/cosmos": "^1.4.1",
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.17",
     "@nivo/bar": "^0.83.0",

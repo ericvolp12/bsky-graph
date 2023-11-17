@@ -5,12 +5,17 @@ import {
   RouterProvider,
   createBrowserRouter,
   useLocation,
+  RedirectFunction,
+  redirect,
+  Navigate,
 } from "react-router-dom";
 import TreeVisContainer from "./components/threads/TreeVis";
 import ThreadSearch from "./components/threads/ThreadSearch";
 import Stats from "./components/stats/Stats";
 import OptOut from "./components/opt_out/OptOut";
 import RepoWalker from "./components/repo_walker/RepoWalker";
+import NewGraphContainer from "./components/NewGraph";
+import RepoCleanup from "./components/repocleanup/RepoCleanup";
 
 const NavList: React.FC = () => {
   let location = useLocation();
@@ -30,7 +35,7 @@ const NavList: React.FC = () => {
     <header className="bg-white fixed top-0 text-center w-full z-50">
       <div className="mx-auto max-w-7xl px-2 align-middle">
         <span className="footer-text text-xs">
-          <Link to="/" className={active(["/"])}>
+          <Link to="/atlas" className={active(["/atlas"])}>
             atlas
           </Link>
           {" | "}
@@ -38,12 +43,16 @@ const NavList: React.FC = () => {
             thread vis
           </Link>
           {" | "}
-          <Link to="/stats" className={active(["/stats"])}>
+          <Link to="/stats" className={active(["/", "/stats"])}>
             stats
           </Link>
           {" | "}
           <Link to="/walker" className={active(["/walker"])}>
             repo explorer
+          </Link>
+          {" | "}
+          <Link to="/cleanup" className={active(["/cleanup"])}>
+            cleanup
           </Link>
         </span>
       </div>
@@ -53,11 +62,20 @@ const NavList: React.FC = () => {
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/atlas",
     element: (
       <>
         <NavList />
         <GraphContainer />
+      </>
+    ),
+  },
+  {
+    path: "/newgraph",
+    element: (
+      <>
+        <NavList />
+        <NewGraphContainer />
       </>
     ),
   },
@@ -89,6 +107,15 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/",
+    element: (
+      <>
+        <Navigate to="/stats" />
+      </>
+    ),
+
+  },
+  {
     path: "/opt_out",
     element: (
       <>
@@ -106,6 +133,15 @@ const router = createBrowserRouter([
       </>
     ),
   },
+  {
+    path: "/cleanup",
+    element: (
+      <>
+        <NavList />
+        <RepoCleanup />
+      </>
+    )
+  }
 ]);
 
 function App() {
