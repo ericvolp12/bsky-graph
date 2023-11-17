@@ -548,6 +548,18 @@ const RepoCleanup: FC<{}> = () => {
                                 </a>
                                 {" 🏳️‍⚧️"}
                             </span>
+                            <span className="footer-text text-xs">
+                                {" | "}
+                                <a
+                                    href="https://github.com/ericvolp12/bsky-experiments/blob/main/pkg/search/endpoints/repocleanup.go"
+                                    target="_blank"
+                                >
+                                    <img
+                                        src="/github.svg"
+                                        className="inline-block h-3.5 w-4 mb-0.5"
+                                    />
+                                </a>
+                            </span>
                         </div>
                     </footer>
                 </div>
