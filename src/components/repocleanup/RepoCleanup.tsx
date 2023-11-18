@@ -34,6 +34,12 @@ declare interface RepoCleanupJob {
     };
 }
 
+declare interface CleanupStats {
+    total_num_deleted: number;
+    num_jobs: number;
+    num_repos: number;
+}
+
 const endpoint = "https://bsky-search.jazco.io/repo/cleanup";
 
 const RepoCleanup: FC<{}> = () => {
@@ -41,6 +47,7 @@ const RepoCleanup: FC<{}> = () => {
     const [loading, setLoading] = useState<string>("");
     const [resp, setResp] = useState<JobSubmissionResponse | null>(null);
     const [job, setJob] = useState<RepoCleanupJob | null>(null);
+    const [stats, setStats] = useState<CleanupStats | null>(null);
 
     const [identifier, setIdentifier] = useState<string>("");
     const [appPass, setAppPass] = useState<string>("");
@@ -54,6 +61,7 @@ const RepoCleanup: FC<{}> = () => {
 
     useEffect(() => {
         document.title = "Repo Cleaner for ATProto by Jaz (jaz.bsky.social)";
+        getStats();
     }, []);
 
     const validateForm = (): boolean => {
@@ -77,6 +85,23 @@ const RepoCleanup: FC<{}> = () => {
         }
         return true;
     };
+
+    const getStats = async () => {
+        await fetch(`${endpoint}/stats`)
+            .then((res) => res.json())
+            .then((data) => {
+                console.log(data);
+                if (data.error) {
+                    setError(data.error);
+                } else {
+                    setStats(data as CleanupStats);
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+                setError(err.error);
+            });
+    }
 
     const submitCleanup = async (actually_delete_stuff: boolean) => {
         setLoading(actually_delete_stuff ? "delete" : "preview");
@@ -536,6 +561,12 @@ const RepoCleanup: FC<{}> = () => {
                         </div>
                     </div>
                     <footer className="text-center w-full mt-10">
+                        <div className="mx-auto max-w-7xl px-2">
+                            <span className="footer-text text-xs">
+                                This tool has deleted {stats?.total_num_deleted.toLocaleString()} records across{" "}
+                                {stats?.num_repos.toLocaleString()} accounts in {stats?.num_jobs.toLocaleString()} jobs
+                            </span>
+                        </div>
                         <div className="mx-auto max-w-7xl px-2">
                             <span className="footer-text text-xs">
                                 Built by{" "}
