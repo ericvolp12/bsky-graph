@@ -564,7 +564,7 @@ const RepoCleanup: FC<{}> = () => {
                         <div className="mx-auto max-w-7xl px-2">
                             <span className="footer-text text-xs">
                                 This tool has deleted {stats?.total_num_deleted.toLocaleString()} records across{" "}
-                                {stats?.num_repos.toLocaleString()} accounts in {stats?.num_jobs.toLocaleString()} jobs
+                                {stats?.num_repos.toLocaleString()} accounts
                             </span>
                         </div>
                         <div className="mx-auto max-w-7xl px-2">
