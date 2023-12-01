@@ -53,6 +53,7 @@ const RepoCleanup: FC<{}> = () => {
     const [appPass, setAppPass] = useState<string>("");
     const [typesToDelete, setTypesToDelete] = useState<string[]>([
         "post",
+        "post_with_media",
         "like",
         "repost",
     ]);
@@ -286,7 +287,30 @@ const RepoCleanup: FC<{}> = () => {
                                                 htmlFor="posts"
                                                 className="font-medium text-gray-900"
                                             >
-                                                Posts
+                                                Posts without Images
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="relative flex ">
+                                        <div className="flex h-6 items-center">
+                                            <input
+                                                id="post_with_media"
+                                                aria-describedby="post_with_media-description"
+                                                name="post_with_media"
+                                                type="checkbox"
+                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                checked={typesToDelete.includes("post_with_media")}
+                                                onChange={(e) => {
+                                                    onCheck(e, "post_with_media");
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="ml-3 text-sm leading-6">
+                                            <label
+                                                htmlFor="post_with_media"
+                                                className="font-medium text-gray-900"
+                                            >
+                                                Posts with Images
                                             </label>
                                         </div>
                                     </div>
