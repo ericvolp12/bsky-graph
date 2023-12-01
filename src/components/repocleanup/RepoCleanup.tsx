@@ -259,7 +259,7 @@ const RepoCleanup: FC<{}> = () => {
                                         >
                                             App Password Here
                                         </a>{" "}
-                                        and delete it once you're done
+                                        and delete it once your job is finished running
                                     </span>
                                 </div>
                             </div>
