@@ -631,7 +631,7 @@ const TreeVisContainer: React.FC<{}> = () => {
                       className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                     />
                     <label
-                      htmlFor="moderatorMode"
+                      htmlFor="quoteMode"
                       className="ml-2 flex text-sm text-gray-900 break-words"
                     >
                       Focus Quotes
