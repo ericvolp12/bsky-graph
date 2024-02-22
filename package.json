@@ -19,6 +19,8 @@
     "@tailwindcss/forms": "^0.5.3",
     "@types/lodash": "^4.14.194",
     "date-fns": "^2.29.3",
+    "echarts": "^5.5.0",
+    "echarts-for-react": "^3.0.2",
     "graphology": "^0.25.1",
     "graphology-layout": "^0.6.1",
     "graphology-layout-forceatlas2": "^0.10.1",

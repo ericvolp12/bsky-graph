@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import ErrorMsg from "../threads/ErrorMsg";
-import { formatDistanceToNow, parseISO } from "date-fns";
-import { Col, DailyDatapoint, DataVolumeBarChart } from "./Charts";
+import { parseISO } from "date-fns";
+import { DailyDatapoint, DailyBarChart } from "./Charts";
 import CountUp from "react-countup";
 
 interface Percentile {
@@ -49,26 +49,6 @@ const Stats: FC<{}> = () => {
   const [stats, setStats] = useState<AuthorStatsResponse | null>(null);
   const [error, setError] = useState<string>("");
   const [showTopPosters, setShowTopPosters] = useState<boolean>(false);
-  const [cols, setCols] = useState<Col[]>([
-    {
-      key: "num_likers",
-      label: "Likers",
-      color: "rgb(232, 193, 160)",
-      hidden: false,
-    },
-    {
-      key: "num_followers",
-      label: "Followers",
-      color: "rgb(244, 117, 96)",
-      hidden: false,
-    },
-    {
-      key: "num_posters",
-      label: "Posters",
-      color: "rgb(241, 225, 91)",
-      hidden: false,
-    },
-  ]);
 
   useEffect(() => {
     document.title = "Stats for Bluesky by Jaz (jaz.bsky.social)";
@@ -87,13 +67,11 @@ const Stats: FC<{}> = () => {
         if (res.updated_at > new Date().toISOString()) {
           res.updated_at = new Date(Date.now() - 1000).toISOString();
         }
-        // Filter daily_data to only include the last 30 days (up until yesterday)
+        // Filter daily_data up to the last full day
         res.daily_data = res.daily_data.filter((d) => {
           return (
-            new Date(d.date).getTime() >
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() &&
             new Date(d.date).getTime() <
-            new Date(Date.now() - 24 * 60 * 60 * 1000).getTime()
+            new Date(new Date().toDateString()).getTime()
           );
         });
         res.daily_data = res.daily_data.sort((a, b) => {
@@ -180,43 +158,10 @@ const Stats: FC<{}> = () => {
                     </div>
                   )}
                 </dl>
-                <div className="py-8 mt-2 h-128">
-                  <DataVolumeBarChart
-                    data={stats ? stats.daily_data : []}
-                    cols={cols.filter((c) => !c.hidden)}
-                  />
-                  <div className="chart_legend">
-                    <div className="flex flex-row justify-center">
-                      {cols.map((col, idx) => (
-                        <div
-                          className="flex flex-row items-center mr-4"
-                          key={`legend-${idx}`}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => {
-                            const newCols = cols.map((c) => {
-                              if (c.key === col.key) {
-                                return {
-                                  ...c,
-                                  hidden: !c.hidden,
-                                };
-                              }
-                              return c;
-                            });
-                            setCols(newCols);
-                          }}
-                        >
-                          <div
-                            className="h-4 w-4 mr-1 rounded-full"
-                            style={{
-                              backgroundColor: col.color,
-                              opacity: col.hidden ? 0.5 : 1,
-                            }}
-                          ></div>
-                          <div className="text-xs">{col.label}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="py-8 mt-2 space-y-8">
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_likers"]} title="Daily Likers" />
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_posters"]} title="Daily Posters" />
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_followers"]} title="Daily Followers" />
                 </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -415,7 +360,7 @@ const Stats: FC<{}> = () => {
           </footer>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

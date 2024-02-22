@@ -1,27 +1,22 @@
-import { ResponsiveBar } from "@nivo/bar";
+import ReactECharts from 'echarts-for-react';
 
 export interface DailyDatapoint {
   date: string;
-  num_likes: number;
-  num_follows: number;
-  num_posts: number;
-  num_blocks: number;
-  num_likers: number;
-  num_followers: number;
-  num_posters: number;
-  num_blockers: number;
+  num_likes?: number;
+  num_follows?: number;
+  num_posts?: number;
+  num_blocks?: number;
+  num_likers?: number;
+  num_followers?: number;
+  num_posters?: number;
+  num_blockers?: number;
 }
 
-export interface Col {
-  key: string;
-  label: string;
-  color: string;
-  hidden: boolean;
-}
 
 export interface ChartProps {
   data: DailyDatapoint[];
-  cols: Col[];
+  columnFilter?: string[];
+  title: string;
 }
 
 const labelMap = {
@@ -32,82 +27,76 @@ const labelMap = {
 
 type labelKey = keyof typeof labelMap;
 
-export const DataVolumeBarChart = ({ data, cols }: ChartProps) => (
-  <ResponsiveBar
-    data={data}
-    keys={cols.map((c) => c.key)}
-    indexBy="date"
-    layout="vertical"
-    margin={{ top: 50, right: 50, bottom: 75, left: 50 }}
-    padding={0.15}
-    valueScale={{ type: "linear" }}
-    indexScale={{ type: "band", round: true }}
-    colors={(d) => cols.find((c) => c.key === d.id)?.color ?? "#000000"}
-    borderColor={{
-      from: "color",
-      modifiers: [["darker", 1.6]],
-    }}
-    axisTop={null}
-    axisRight={null}
-    axisBottom={{
-      tickSize: 5,
-      tickPadding: 5,
-      tickRotation: -40,
-      legend: "Date",
-      legendPosition: "middle",
-      legendOffset: 60,
-    }}
-    axisLeft={{
-      tickSize: 5,
-      tickPadding: 5,
-      tickRotation: -25,
-      legend: "Unique Users",
-      legendPosition: "middle",
-      legendOffset: -45,
-      format: (v) => {
-        if (v > 1000) {
-          return `${v / 1000000}m`;
-        }
-        return v.toLocaleString();
+const colorMap = {
+  num_likers: "skyblue",
+  num_followers: "lightgreen",
+  num_posters: "lightcoral",
+};
+
+export const DailyBarChart = ({ data, columnFilter, title }: ChartProps) => {
+  if (columnFilter) {
+    data = data.map((d) => {
+      const newD: DailyDatapoint = { date: d.date };
+      columnFilter.forEach((key) => {
+        newD[key as labelKey] = d[key as labelKey];
+      });
+      return newD;
+    });
+  }
+
+  const keys = columnFilter || Object.keys(labelMap);
+
+  const options = {
+    height: 350,
+    title: {
+      text: title,
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "shadow",
       },
-    }}
-    labelFormat={(v) => v.toLocaleString()}
-    labelSkipWidth={12}
-    labelSkipHeight={12}
-    labelTextColor={{
-      from: "color",
-      modifiers: [["darker", 1.6]],
-    }}
-    tooltipLabel={(v) => {
-      const key = v.id as labelKey;
-      if (key in labelMap) {
-        return labelMap[key];
-      }
-      return v.id.toLocaleString();
-    }}
-    // Value Format to {thousands}k or {millions}m
-    valueFormat={(v) => {
-      if (v > 1000 && v < 1000000) {
-        return `${Math.round(v / 1000)}k`;
-      } else if (v > 1000000) {
-        return `${(v / 1000000).toFixed(2)}m`;
-      }
-      return v.toLocaleString();
-    }}
-    theme={{
-      axis: {
-        ticks: {
-          text: {
-            fontSize: 10,
-          },
-        },
+    },
+    legend: {
+      data: keys.map((key) => labelMap[key as labelKey]),
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: data.map((d) => d.date),
+    },
+    yAxis: {
+      type: "value",
+    },
+    series: keys.map((key) => ({
+      name: labelMap[key as labelKey],
+      type: "bar",
+      color: colorMap[key as labelKey],
+      stack: "total",
+      data: data.map((d) => d[key as labelKey]),
+    })),
+    dataZoom: [
+      {
+        type: "slider",
+        show: true,
+        xAxisIndex: [0, 1],
+        start: 70,
+        end: 100,
+        showDataShadow: true,
       },
-      labels: {
-        text: {
-          fontSize: 10,
-        },
+      {
+        type: "inside",
+        xAxisIndex: [0, 1],
+        start: 70,
+        end: 100,
       },
-    }}
-    role="application"
-  />
-);
+    ],
+  };
+
+
+  return <ReactECharts option={options} style={{ height: "465px" }} />;
+};
