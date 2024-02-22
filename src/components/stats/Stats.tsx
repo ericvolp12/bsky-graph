@@ -77,6 +77,12 @@ const Stats: FC<{}> = () => {
         res.daily_data = res.daily_data.sort((a, b) => {
           return new Date(a.date).getTime() - new Date(b.date).getTime();
         });
+        res.daily_data = res.daily_data.map((d) => {
+          if (d.num_images_with_alt_text && d.num_images) {
+            d.alt_text_ratio = d.num_images_with_alt_text / d.num_images;
+          }
+          return d;
+        });
         setStats(res);
       })
       .catch((err) => {
@@ -159,9 +165,9 @@ const Stats: FC<{}> = () => {
                   )}
                 </dl>
                 <div className="py-8 mt-2 space-y-8">
-                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_likers"]} title="Daily Likers" />
-                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_posters"]} title="Daily Posters" />
-                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_followers"]} title="Daily Followers" />
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_likers"]} title="Daily Likers" startOffset={70} />
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_posters"]} title="Daily Posters" startOffset={70} />
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_followers"]} title="Daily Followers" startOffset={70} />
                 </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -308,6 +314,10 @@ const Stats: FC<{}> = () => {
                       </ul>
                     </div>
                   )}
+                </div>
+
+                <div className="py-8 mt-2 space-y-8">
+                  <DailyBarChart data={stats?.daily_data || []} columnFilter={["num_likes", "num_posts", "num_follows"]} title="Daily Records" startOffset={90} />
                 </div>
               </div>
             </div>

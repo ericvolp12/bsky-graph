@@ -10,6 +10,10 @@ export interface DailyDatapoint {
   num_followers?: number;
   num_posters?: number;
   num_blockers?: number;
+  num_images?: number;
+  num_posts_with_images?: number;
+  num_images_with_alt_text?: number;
+  alt_text_ratio?: number;
 }
 
 
@@ -17,12 +21,19 @@ export interface ChartProps {
   data: DailyDatapoint[];
   columnFilter?: string[];
   title: string;
+  startOffset?: number;
 }
 
 const labelMap = {
   num_likers: "Unique Likers",
   num_followers: "Unique Followers",
   num_posters: "Unique Posters",
+  num_likes: "Total Likes",
+  num_follows: "Total Follows",
+  num_posts: "Total Posts",
+  num_posts_with_images: "Posts with Images",
+  num_images_with_alt_text: "Images with Alt Text",
+  alt_text_ratio: "Percentage of Images with Alt Text",
 };
 
 type labelKey = keyof typeof labelMap;
@@ -31,9 +42,15 @@ const colorMap = {
   num_likers: "skyblue",
   num_followers: "lightgreen",
   num_posters: "lightcoral",
+  num_likes: "skyblue",
+  num_follows: "lightgreen",
+  num_posts: "lightcoral",
+  num_posts_with_images: "skyblue",
+  num_images_with_alt_text: "lightgreen",
+  alt_text_ratio: "lightcoral",
 };
 
-export const DailyBarChart = ({ data, columnFilter, title }: ChartProps) => {
+export const DailyBarChart = ({ data, columnFilter, title, startOffset }: ChartProps) => {
   if (columnFilter) {
     data = data.map((d) => {
       const newD: DailyDatapoint = { date: d.date };
@@ -76,7 +93,6 @@ export const DailyBarChart = ({ data, columnFilter, title }: ChartProps) => {
       name: labelMap[key as labelKey],
       type: "bar",
       color: colorMap[key as labelKey],
-      stack: "total",
       data: data.map((d) => d[key as labelKey]),
     })),
     dataZoom: [
@@ -84,14 +100,14 @@ export const DailyBarChart = ({ data, columnFilter, title }: ChartProps) => {
         type: "slider",
         show: true,
         xAxisIndex: [0, 1],
-        start: 70,
+        start: startOffset,
         end: 100,
         showDataShadow: true,
       },
       {
         type: "inside",
         xAxisIndex: [0, 1],
-        start: 70,
+        start: startOffset,
         end: 100,
       },
     ],
