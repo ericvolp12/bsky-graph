@@ -5,8 +5,6 @@ import {
   RouterProvider,
   createBrowserRouter,
   useLocation,
-  RedirectFunction,
-  redirect,
   Navigate,
 } from "react-router-dom";
 import TreeVisContainer from "./components/threads/TreeVis";
