@@ -154,19 +154,19 @@ const Stats: FC<{}> = () => {
                     data={stats?.daily_data || []}
                     columnFilter={["num_likers"]}
                     title="Daily Likers"
-                    startOffset={70}
+                    startOffset={90}
                   />
                   <DailyBarChart
                     data={stats?.daily_data || []}
                     columnFilter={["num_posters"]}
                     title="Daily Posters"
-                    startOffset={70}
+                    startOffset={90}
                   />
                   <DailyBarChart
                     data={stats?.daily_data || []}
                     columnFilter={["num_followers"]}
                     title="Daily Followers"
-                    startOffset={70}
+                    startOffset={90}
                   />
                 </div>
                 <div className="py-8 mt-2 text-center">
