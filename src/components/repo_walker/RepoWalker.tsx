@@ -346,7 +346,7 @@ const RepoWalker: FC<{}> = () => {
                       setDownloading(true);
                       const repoDid = await handleButtonClick(e);
                       const resp = await fetch(
-                        `https://bsky.social/xrpc/com.atproto.sync.getCheckout?did=${repoDid}`,
+                        `https://bsky.network/xrpc/com.atproto.sync.getRepo?did=${repoDid}`,
                         {
                           headers: {
                             "Content-Type": "application/vnd.ipld.car",
