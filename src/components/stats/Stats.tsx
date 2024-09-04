@@ -105,7 +105,7 @@ const Stats: FC<{}> = () => {
                     <div className="text-gray-700 text-lg font-semibold">
                       Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
-                    <div className="text-gray-700 text-lg font-semibold">
+                    <div className="text-gray-600 text-sm font-semibold mt-8">
                       WARNING: Since the recent massive influx of activity, the only accurate stats are for the total number of users and may not be updated as regularly.
                     </div>
                   </div>
