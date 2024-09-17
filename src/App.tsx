@@ -7,8 +7,6 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-import TreeVisContainer from "./components/threads/TreeVis";
-import ThreadSearch from "./components/threads/ThreadSearch";
 import Stats from "./components/stats/Stats";
 import OptOut from "./components/opt_out/OptOut";
 import RepoWalker from "./components/repo_walker/RepoWalker";
@@ -35,10 +33,6 @@ const NavList: React.FC = () => {
         <span className="footer-text text-xs">
           <Link to="/atlas" className={active(["/atlas"])}>
             atlas
-          </Link>
-          {" | "}
-          <Link to="/thread" className={active(["/thread", "/thread/view"])}>
-            thread vis
           </Link>
           {" | "}
           <Link to="/stats" className={active(["/", "/stats"])}>
@@ -111,7 +105,6 @@ const router = createBrowserRouter([
         <Navigate to="/stats" />
       </>
     ),
-
   },
   {
     path: "/opt_out",
@@ -138,8 +131,8 @@ const router = createBrowserRouter([
         <NavList />
         <RepoCleanup />
       </>
-    )
-  }
+    ),
+  },
 ]);
 
 function App() {
