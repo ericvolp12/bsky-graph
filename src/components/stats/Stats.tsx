@@ -1,32 +1,20 @@
 import { FC, useEffect, useState } from "react";
-import ErrorMsg from "../threads/ErrorMsg";
+import ErrorMsg from "../ErrorMsg";
 import { parseISO } from "date-fns";
 import { DailyDatapoint, DailyBarChart } from "./Charts";
 import CountUp from "react-countup";
-
-interface Percentile {
-  percentile: number;
-  count: number;
-}
 
 interface FollowerPercentile {
   percentile: number;
   value: number;
 }
 
-interface Bracket {
-  min: number;
-  count: number;
-}
-
 interface AuthorStatsResponse {
-  total_authors: number;
   total_users: number;
   total_posts: number;
-  mean_post_count: number;
-  percentiles: Percentile[];
+  total_follows: number;
+  total_likes: number;
   follower_percentiles: FollowerPercentile[];
-  brackets: Bracket[];
   updated_at: string;
   daily_data: DailyDatapoint[];
 }
@@ -40,8 +28,13 @@ const Stats: FC<{}> = () => {
   }, []);
 
   const getMillionString = (num: number) => {
-    if (num < 1000000) return num.toLocaleString();
-    return `${(num / 1000000).toFixed(2)}M`;
+    if (num < 1000000) {
+      return num.toLocaleString();
+    } else if (num < 1000000000) {
+      return (num / 1000000).toFixed(2) + "M";
+    } else {
+      return (num / 1000000000).toFixed(3) + "B";
+    }
   };
 
   const refreshStats = () => {
@@ -106,7 +99,9 @@ const Stats: FC<{}> = () => {
                       Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
                     <div className="text-gray-600 text-sm font-semibold mt-8">
-                      WARNING: Since the recent massive influx of activity, the only accurate stats are for the total number of users and may not be updated as regularly.
+                      WARNING: Since the recent massive influx of activity, the
+                      only accurate stats are for the total number of users and
+                      may not be updated as regularly.
                     </div>
                   </div>
                 </div>
@@ -124,30 +119,30 @@ const Stats: FC<{}> = () => {
                   {stats && (
                     <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
                       <dt className="text-base leading-7 text-gray-600">
-                        Post Authors
-                      </dt>
-                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.total_authors.toLocaleString()}
-                      </dd>
-                    </div>
-                  )}
-                  {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
-                      <dt className="text-base leading-7 text-gray-600">
-                        Mean Post Count
-                      </dt>
-                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                        {stats.mean_post_count.toFixed(2)}
-                      </dd>
-                    </div>
-                  )}
-                  {stats && (
-                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
-                      <dt className="text-base leading-7 text-gray-600">
                         Total Posts
                       </dt>
                       <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
                         {getMillionString(stats.total_posts)}
+                      </dd>
+                    </div>
+                  )}
+                  {stats && (
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
+                      <dt className="text-base leading-7 text-gray-600">
+                        Total Follows
+                      </dt>
+                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                        {getMillionString(stats.total_follows)}
+                      </dd>
+                    </div>
+                  )}
+                  {stats && (
+                    <div className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1">
+                      <dt className="text-base leading-7 text-gray-600">
+                        Total Likes
+                      </dt>
+                      <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+                        {getMillionString(stats.total_likes)}
                       </dd>
                     </div>
                   )}
@@ -171,34 +166,6 @@ const Stats: FC<{}> = () => {
                     title="Daily Followers"
                     startOffset={90}
                   />
-                </div>
-                <div className="py-8 mt-2 text-center">
-                  <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="text-gray-700 text-lg font-semibold">
-                      Posts per User Percentiles
-                    </div>
-                  </div>
-                  <div className="lg:mt-8 mt-2">
-                    <dl className="grid grid-cols-5 gap-x-2 lg:gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-10 justify-center">
-                      {stats &&
-                        stats.percentiles.map((p, idx) => (
-                          <div
-                            className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1"
-                            key={`p-${idx}`}
-                          >
-                            <dt className="text-base leading-7 text-gray-600">
-                              {p.percentile * 100}th
-                              <span className="hidden sm:block">
-                                Percentile
-                              </span>
-                            </dt>
-                            <dd className="order-first text-xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-                              {p.count.toLocaleString()}
-                            </dd>
-                          </div>
-                        ))}
-                    </dl>
-                  </div>
                 </div>
                 <div className="py-8 mt-2 text-center">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -228,33 +195,6 @@ const Stats: FC<{}> = () => {
                     </dl>
                   </div>
                 </div>
-                <div className="py-8 mt-2 text-center">
-                  <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="text-gray-700 text-lg font-semibold">
-                      Users with More Than <span className="italic">n</span>{" "}
-                      Posts
-                    </div>
-                  </div>
-                  <div className="lg:mt-8 mt-2">
-                    <dl className="grid grid-cols-3 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-6">
-                      {stats &&
-                        stats.brackets.map((b, idx) => (
-                          <div
-                            className="mx-auto flex max-w-xs flex-col lg:gap-y-4 gap-y-1"
-                            key={`b-${idx}`}
-                          >
-                            <dt className="text-base leading-7 text-gray-600">
-                              {`>${b.min}`}
-                            </dt>
-                            <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-                              {b.count.toLocaleString()}
-                            </dd>
-                          </div>
-                        ))}
-                    </dl>
-                  </div>
-                </div>
-
                 <div className="py-8 mt-2 space-y-8">
                   <DailyBarChart
                     data={stats?.daily_data || []}

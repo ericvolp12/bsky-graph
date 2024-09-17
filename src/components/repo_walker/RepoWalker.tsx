@@ -1,7 +1,7 @@
 import { CloudArrowDownIcon } from "@heroicons/react/24/solid";
 import { FC, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import ErrorMsg from "../threads/ErrorMsg";
+import ErrorMsg from "../ErrorMsg";
 
 interface Subject {
   cid: string;
