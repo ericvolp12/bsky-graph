@@ -72,24 +72,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/thread",
-    element: (
-      <>
-        <NavList />
-        <ThreadSearch />
-      </>
-    ),
-  },
-  {
-    path: "/thread/view",
-    element: (
-      <>
-        <NavList />
-        <TreeVisContainer />
-      </>
-    ),
-  },
-  {
     path: "/stats",
     element: (
       <>
