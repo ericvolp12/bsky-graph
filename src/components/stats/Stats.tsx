@@ -99,9 +99,7 @@ const Stats: FC<{}> = () => {
                       Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
                     <div className="text-gray-600 text-sm font-semibold mt-8">
-                      WARNING: Since the recent massive influx of activity, the
-                      only accurate stats are for the total number of users and
-                      may not be updated as regularly.
+                      WARNING: Stats other than Total Users are now falling behind as of November 15th, 2024 from the activity influx, numbers past that date are incomplete.
                     </div>
                   </div>
                 </div>
