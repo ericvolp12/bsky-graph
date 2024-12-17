@@ -98,9 +98,9 @@ const Stats: FC<{}> = () => {
                     <div className="text-gray-700 text-lg font-semibold">
                       Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
-                    <div className="text-gray-600 text-sm font-semibold mt-8">
+                    {/* <div className="text-gray-600 text-sm font-semibold mt-8">
                       WARNING: Stats other than Total Users are now falling behind as of November 15th, 2024 from the activity influx, numbers past that date are incomplete.
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <dl className="grid grid-cols-2 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-4 max-w-5xl mx-auto">
