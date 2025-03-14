@@ -205,6 +205,9 @@ const RepoCleanup: FC<{}> = () => {
                 A tool to clean up old posts, likes, and reposts from your
                 Bluesky account
               </p>
+              <div className="text-gray-600 text-sm font-semibold mt-8">
+                      WARNING: Due to a ongoing physical move of my servers, the cleanup tool is temporarily unavailable. See <a href="https://bsky.app/profile/jaz.bsky.social/post/3lkbrpbkz6s2c" className="font-bold text-gray-800">This Post on Bluesky</a> for more details.
+              </div>
             </div>
             <form
               className="mt-6 flex items-center max-w-2xl mx-auto flex-col"
