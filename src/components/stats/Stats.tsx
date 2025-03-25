@@ -100,9 +100,6 @@ const Stats: FC<{}> = () => {
                     <div className="text-gray-700 text-lg font-semibold">
                       Aggregate stats for all posts in Jaz's Bluesky index.
                     </div>
-                    <div className="text-gray-600 text-sm font-semibold mt-8">
-                      WARNING: Due to a ongoing physical move of my servers, stats are frozen as of March 13th, 2025. They should resume updating around March 20th if things go well. See <a href="https://bsky.app/profile/jaz.bsky.social/post/3lkbrpbkz6s2c" className="font-bold text-gray-800">This Post on Bluesky</a> for more details.
-                    </div>
                   </div>
                 </div>
                 <dl className="grid grid-cols-2 gap-x-8 gap-y-2 lg:gap-y-16 text-center lg:grid-cols-4 max-w-5xl mx-auto">
